@@ -414,6 +414,7 @@ def WIND_DIR(deg):
         return 85
     elif deg >= 327 and deg <=  348:
         return 86
+    return 0
 
 # calculate windchill in fahrenheit from temperature in fahrenheit and windspeed in mph
 def windchill(temp, speed):
