@@ -28,6 +28,8 @@ __icon__ = __addon__.getAddonInfo('icon')
 __addonid__ = __addon__.getAddonInfo('id')
 
 # get settings...
+TEMPUNIT = "C"
+SPEEDUNIT = "km/h"
 ha_key = __addon__.getSettingString('ha_key')
 ha_server = __addon__.getSettingString('ha_server')
 ha_weather_url = __addon__.getSettingString('ha_weather_url')
@@ -173,6 +175,21 @@ class MAIN():
                     set_property('Day'+count+'.OutlookIcon', '%s.png' % str(get_condition_code_by_name(forecast['day'+count+'_condition'])), WND)
                     set_property('Day'+count+'.HighTemp'   , str(forecast['day'+count+'_temperature']), WND)
                     set_property('Day'+count+'.LowTemp'    , str(forecast['day'+count+'_temperature_low']), WND)
+                    set_property('Daily.'+str(i+1)+'.ShortDay', convert_datetime(parse_date(forecast['day'+count+'_date']), 'date', 'weekday', 'short'), WND)
+                    set_property('Daily.'+str(i+1)+'.LongDay', convert_datetime(parse_date(forecast['day'+count+'_date']), 'date', 'weekday', 'long'), WND)
+                    set_property('Daily.'+str(i+1)+'.ShortDate', convert_datetime(parse_date(forecast['day'+count+'_date']), 'date', 'monthday', 'short'), WND)
+                    set_property('Daily.'+str(i+1)+'.LongDate', convert_datetime(parse_date(forecast['day'+count+'_date']), 'date', 'monthday', 'long'), WND)
+                    set_property('Daily.'+str(i+1)+'.HighTemperature' , str(forecast['day'+count+'_temperature'])+TEMPUNIT, WND)
+                    set_property('Daily.'+str(i+1)+'.LowTemperature', str(forecast['day'+count+'_temperature_low'])+TEMPUNIT, WND)
+                    set_property('Daily.'+str(i+1)+'.Humidity', str(forecast['day'+count+'_humidity'])+'%', WND)
+                    set_property('Daily.'+str(i+1)+'.Precipitation', str(forecast['day'+count+'_precipitation'])+'mm', WND)
+                    set_property('Daily.'+str(i+1)+'.WindDirection', str(xbmc.getLocalizedString(WIND_DIR(forecast['day'+count+'_wind_bearing']))), WND)
+                    set_property('Daily.'+str(i+1)+'.WindSpeed', str(xbmc.getLocalizedString(WIND_DIR(forecast['day'+count+'_wind_speed']))) + SPEEDUNIT, WND)
+                    set_property('Daily.'+str(i+1)+'.WindDegree', str(forecast['day'+count+'_wind_bearing']) + u'°', WND)
+                    #set_property('Daily.'+str(i+1)+'.DewPoint', str(forecast['day'+count+'_dew_point'])+TEMPUNIT, WND)
+                    set_property('Daily.'+str(i+1)+'.Outlook', str(forecast['day'+count+'_condition']), WND)
+                    set_property('Daily.'+str(i+1)+'.OutlookIcon', '%s.png' % str(get_condition_code_by_name(forecast['day'+count+'_condition'])), WND)
+                    set_property('Daily.'+str(i+1)+'.FanartCode', get_condition_code_by_name(forecast['day'+count+'_condition']), WND)
                 set_property('Daily.IsFetched', 'true', WND)
             else:
                 log('The response dict from get_forecast url does not contain forecast key. This is unexpected.')
