@@ -8,6 +8,8 @@
         <setting id="ha_weather_url_data"       type="text" label="30005" default="" />
         <setting id="ha_weather_daily_url"      type="text" label="30006" default="/api/states/sensor.dailyweather" />
         <setting id="ha_weather_daily_url_data" type="text" label="30007" default="" />
+        <setting id="ha_weather_hourly_url"     type="text" label="30015" default="/api/states/sensor.hourlyweather" />
+        <setting id="ha_weather_hourly_url_data" type="text" label="30016" default="" />
         <setting type="sep"/>
         <setting id="CurrentLocation"                label="Current Location" type="bool" default="true" />
         <setting id="Location1"                      label="Location 1" type="action" action="RunScript($ID,action=location&amp;id=1)" default=""/>

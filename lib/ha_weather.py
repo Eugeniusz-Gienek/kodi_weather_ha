@@ -36,6 +36,8 @@ ha_weather_url = __addon__.getSettingString('ha_weather_url')
 ha_weather_url_data = __addon__.getSettingString('ha_weather_url_data')
 ha_weather_daily_url = __addon__.getSettingString('ha_weather_daily_url')
 ha_weather_daily_url_data = __addon__.getSettingString('ha_weather_daily_url_data')
+ha_weather_hourly_url = __addon__.getSettingString('ha_weather_hourly_url')
+ha_weather_hourly_url_data = __addon__.getSettingString('ha_weather_hourly_url_data')
 # ... and fix them if necessary
 if ha_server and ha_server.endswith('/'):
     ha_server = ha_server[:-1]
@@ -43,8 +45,9 @@ if ha_weather_url and (not ha_weather_url.startswith('/')):
     ha_weather_url = '/' + ha_weather_url
 if ha_weather_daily_url and (not ha_weather_daily_url.startswith('/')):
     ha_weather_daily_url = '/' + ha_weather_daily_url
+if ha_weather_hourly_url and (not ha_weather_hourly_url.startswith('/')):
+    ha_weather_hourly_url = '/' + ha_weather_hourly_url
 ha_api_base = ha_server + '/api'
-settings_provided = ha_key and ha_server and ha_weather_url and ha_weather_daily_url
 
 headers = {'Authorization': 'Bearer ' + ha_key, 'Content-Type': 'application/json'}
 
@@ -55,12 +58,13 @@ class MAIN():
         log('Home Assistant Weather started.')
         #self.MONITOR = MyMonitor()
         mode = kwargs['mode']
-        global WND, settings_provided
+        global WND
         WND = kwargs['w']
-        self.settings_provided = settings_provided
+        self.settings_provided = ha_key and ha_server and ha_weather_url and ha_weather_daily_url and ha_weather_hourly_url
         if not self.settings_provided:
             show_dialog(__addon__.getLocalizedString(30010))
             log('Settings for Home Assistant Weather not yet provided. Plugin will not work.')
+            #raise Exception((ha_key, ha_server, ha_weather_url, ha_weather_daily_url, ha_weather_hourly_url))
         else:
             #Test connection / get version
             response = self.getRequest('/config')
@@ -108,6 +112,7 @@ class MAIN():
     def getForecasts(self):
         global ha_weather_url, ha_weather_daily_url, ha_server, ha_key
         log('Getting forecasts from Home Assistant server.')
+        # Current weather
         response = self.getRequest(ha_weather_url)
         if response is not None:
             log('Response (weather) from server: ' + str(response.content))
@@ -147,24 +152,25 @@ class MAIN():
                 set_property('Forecast.Updated'      , parsedResponse['last_updated'], WND)
                 set_property('WeatherProvider'       , 'Home Assistant Weather', WND)
                 set_property('WeatherProviderLogo'   , translate_path(os.path.join('weather.ha', 'resources', 'banner.png')), WND)
-                set_property('Hourly.IsFetched'      , '', WND)
+                #set_property('Hourly.IsFetched'      , '', WND)
             else:
                 log('The response dict from get_forecast url does not contain forecast key. This is unexpected.')
                 show_dialog(__addon__.getLocalizedString(30014))
                 self.clearProps()
         else:
-            log('Response (weather hourly) from server is NONE!')
-            show_dialog('Response (weather hourly) from server is NONE!')
+            log('Response (weather current) from server is NONE!')
+            show_dialog('Response (weather current) from server is NONE!')
             self.clearProps()
+        # Daily
         response = self.getRequest(ha_weather_daily_url)
         if response is not None:
-            log('Response (weather daily) from server: ' + str(response.content))
+            log('Response (weather hourly) from server: ' + str(response.content))
             try:
                 parsedResponse = json.loads(response.text)
             except json.decoder.JSONDecodeError:
                 show_dialog(__addon__.getLocalizedString(30014))
                 self.clearProps()
-                raise Exception('Got incorrect response from Home Assistant Weather server (request was to ' + ha_weather_daily_url + ' with data: ' + ha_weather_daily_url_data + ') and response received: ' + response.text)
+                raise Exception('Got incorrect response from Home Assistant Weather server (request was to ' + ha_weather_daily_url + ' with data: ' + ha_weather_hourly_url_data + ') and response received: ' + response.text)
             if parsedResponse.get('attributes') is not None:
                 forecast = parsedResponse['attributes']
                 for i in range (0, forecast['days_num']):
@@ -191,6 +197,43 @@ class MAIN():
                     set_property('Daily.'+str(i+1)+'.OutlookIcon', '%s.png' % str(get_condition_code_by_name(forecast['day'+count+'_condition'])), WND)
                     set_property('Daily.'+str(i+1)+'.FanartCode', get_condition_code_by_name(forecast['day'+count+'_condition']), WND)
                 set_property('Daily.IsFetched', 'true', WND)
+            else:
+                log('The response dict from get_forecast url does not contain forecast key. This is unexpected.')
+                show_dialog(__addon__.getLocalizedString(30014))
+                self.clearProps()
+        else:
+            log('Response (weather daily) from server is NONE!')
+            show_dialog('Response (weather daily) from server is NONE')
+            self.clearProps()
+        # Hourly weather
+        response = self.getRequest(ha_weather_hourly_url)
+        if response is not None:
+            log('Response (weather daily) from server: ' + str(response.content))
+            try:
+                parsedResponse = json.loads(response.text)
+            except json.decoder.JSONDecodeError:
+                show_dialog(__addon__.getLocalizedString(30014))
+                self.clearProps()
+                raise Exception('Got incorrect response from Home Assistant Weather server (request was to ' + ha_weather_daily_url + ' with data: ' + ha_weather_daily_url_data + ') and response received: ' + response.text)
+            if parsedResponse.get('attributes') is not None:
+                forecast = parsedResponse['attributes']
+                for i in range (0, forecast['hours_num']):
+                    count = str(i)
+                    set_property('Hourly.'+str(i+1)+'.Time', convert_datetime(forecast['hour'+count+'_date'], 'datetime', 'time', None), WND)
+                    set_property('Hourly.'+str(i+1)+'.ShortDate', convert_datetime(forecast['hour'+count+'_date'], 'datetime', 'monthday', 'short'), WND)
+                    set_property('Hourly.'+str(i+1)+'.LongDate', convert_datetime(forecast['hour'+count+'_date'], 'datetime', 'monthday', 'long'), WND)
+                    set_property('Hourly.'+str(i+1)+'.Temperature' , str(forecast['hour'+count+'_temperature'])+TEMPUNIT, WND)
+                    #set_property('Hourly.'+str(i+1)+'.LowTemperature', str(forecast['hour'+count+'_temperature_low'])+TEMPUNIT, WND)
+                    set_property('Hourly.'+str(i+1)+'.Humidity', str(forecast['hour'+count+'_humidity'])+'%', WND)
+                    set_property('Hourly.'+str(i+1)+'.Precipitation', str(forecast['hour'+count+'_precipitation'])+'mm', WND)
+                    set_property('Hourly.'+str(i+1)+'.WindDirection', str(xbmc.getLocalizedString(WIND_DIR(forecast['hour'+count+'_wind_bearing']))), WND)
+                    set_property('Hourly.'+str(i+1)+'.WindSpeed', str(xbmc.getLocalizedString(WIND_DIR(forecast['hour'+count+'_wind_speed']))) + SPEEDUNIT, WND)
+                    set_property('Hourly.'+str(i+1)+'.WindDegree', str(forecast['hour'+count+'_wind_bearing']) + u'°', WND)
+                    #set_property('Hourly.'+str(i+1)+'.DewPoint', str(forecast['hour'+count+'_dew_point'])+TEMPUNIT, WND)
+                    set_property('Hourly.'+str(i+1)+'.Outlook', str(forecast['hour'+count+'_condition']), WND)
+                    set_property('Hourly.'+str(i+1)+'.OutlookIcon', '%s.png' % str(get_condition_code_by_name(forecast['hour'+count+'_condition'])), WND)
+                    set_property('Hourly.'+str(i+1)+'.FanartCode', get_condition_code_by_name(forecast['hour'+count+'_condition']), WND)
+                set_property('Hourly.IsFetched', 'true', WND)
             else:
                 log('The response dict from get_forecast url does not contain forecast key. This is unexpected.')
                 show_dialog(__addon__.getLocalizedString(30014))

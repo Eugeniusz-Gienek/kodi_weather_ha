@@ -38,12 +38,12 @@ msgid "Home Assistant Long Live Token"
 msgstr "Home Assistant Long Live Token"
 
 msgctxt "#30004"
-msgid "Home Assistant Weather REST API url for hourly forecast (e.g. /api/...)"
-msgstr "REST API pogody Home Assistant dla pogody godzinowej (np. /api/...)"
+msgid "Home Assistant Weather REST API url for current forecast (e.g. /api/...)"
+msgstr "REST API pogody Home Assistant dla pogody obecnej (np. /api/...)"
 
 msgctxt "#30005"
-msgid "Home Assistant Weather REST API data for hourly URL (JSON)"
-msgstr "Dane JSON dla godzinowej prognozy"
+msgid "Home Assistant Weather REST API data for current URL (JSON)"
+msgstr "Dane JSON dla obecnej prognozy"
 
 msgctxt "#30006"
 msgid "Home Assistant Weather REST API url for daily forecast (e.g. /api/....)"
@@ -80,6 +80,14 @@ msgstr "Coś się stało - warto sprawdzić czy adres URL/IP jest poprawny no i 
 msgctxt "#30014"
 msgid "Unexpected response from Home Assistant weather server. This is an error."
 msgstr "Dostaliśmy nieoczeniwaną odpowiedź od serwera Home Assistant - to jest błąd."
+
+msgctxt "#30015"
+msgid "Home Assistant Weather REST API url for hourly forecast (e.g. /api/...)"
+msgstr "REST API pogody Home Assistant dla pogody godzinowej (np. /api/...)"
+
+msgctxt "#30016"
+msgid "Home Assistant Weather REST API data for hourly URL (JSON)"
+msgstr "Dane JSON dla godzinowej prognozy"
 
 msgctxt "#32101"
 msgid "Location setup"

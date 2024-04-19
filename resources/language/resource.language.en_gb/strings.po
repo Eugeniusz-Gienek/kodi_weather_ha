@@ -38,11 +38,11 @@ msgid "Home Assistant Long Live Token"
 msgstr ""
 
 msgctxt "#30004"
-msgid "Home Assistant Weather REST API url for hourly forecast (e.g. /api/...)"
+msgid "Home Assistant Weather REST API url for current forecast (e.g. /api/...)"
 msgstr ""
 
 msgctxt "#30005"
-msgid "Home Assistant Weather REST API data for hourly URL (JSON)"
+msgid "Home Assistant Weather REST API data for current URL (JSON)"
 msgstr ""
 
 msgctxt "#30006"
@@ -79,6 +79,14 @@ msgstr ""
 
 msgctxt "#30014"
 msgid "Unexpected response from Home Assistant weather server. This is an error."
+msgstr ""
+
+msgctxt "#30015"
+msgid "Home Assistant Weather REST API url for hourly forecast (e.g. /api/...)"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Home Assistant Weather REST API data for hourly URL (JSON)"
 msgstr ""
 
 msgctxt "#32101"
