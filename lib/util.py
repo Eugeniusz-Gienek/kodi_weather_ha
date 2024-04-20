@@ -456,3 +456,10 @@ def calculateFeelsLike(T, RH):
         elif (T<80):
             HI = 0.5 * (T + 61.0 + ((T-68.0) * 1.2) + (RH * 0.094))
     return float(convert_temp(HI, 'F', None))
+
+def fix_condition_translation_codes(s):
+    if s == 'rainy':
+        s = 'rain'
+    elif s == 'partlycloudy':
+        s = 'partly cloudy'
+    return s
