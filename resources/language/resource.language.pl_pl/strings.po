@@ -267,7 +267,7 @@ msgstr "rozproszone burze z piorunami"
 
 msgctxt "#30139"
 msgid "scattered-thunderstorms2"
-msgstr "rozproszone burze z piorunami""
+msgstr "rozproszone burze z piorunami"
 
 msgctxt "#30140"
 msgid "scattered-showers"
