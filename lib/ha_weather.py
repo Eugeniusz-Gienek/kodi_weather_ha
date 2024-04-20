@@ -164,6 +164,22 @@ class MAIN():
                 loc = ha_loc_title
                 if ha_use_loc_title == "true":
                     loc = loc_friendly_name
+                if not 'state' in parsedResponse:
+                    parsedResponse['state'] = 'n/a'
+                if not 'last_updated' in parsedResponse:
+                    parsedResponse['last_updated'] = 'n/a'
+                if not 'temperature' in forecast:
+                    forecast['temperature'] = 0
+                if not 'wind_speed' in forecast:
+                    forecast['wind_speed'] = 0
+                if not 'wind_bearing' in forecast:
+                    forecast['wind_bearing'] = 0
+                if not 'humidity' in forecast:
+                    forecast['humidity'] = 0
+                if not 'dew_point' in forecast:
+                    forecast['dew_point'] = 0
+                if not 'pressure' in forecast:
+                    forecast['pressure'] = 0
                 set_property('Location1'             , loc, WND)
                 set_property('Locations'             , '1', WND)
                 set_property('ForecastLocation'      , loc, WND)
