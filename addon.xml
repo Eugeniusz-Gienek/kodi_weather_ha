@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="weather.ha" name="Home Assistant Weather" version="0.0.3" provider-name="eugeniusz.gienek">
+<addon id="weather.ha" name="Home Assistant Weather" version="0.0.4" provider-name="eugeniusz.gienek">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.18.0"/>
         <import addon="script.module.iso8601" version="0.1.12"/>
         <import addon="script.module.yaml" version="4.1"/>
         <import addon="script.module.dateutil" version="2.8.1"/>
-        <import addon="script.module.simpleplugin3" version="3.0.5"/>
     </requires>
     <extension point="xbmc.python.weather" library="default.py"/>
     <extension point="xbmc.addon.metadata">
