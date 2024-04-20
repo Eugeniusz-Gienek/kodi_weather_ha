@@ -78,7 +78,7 @@ def parse_dateTime(event_date):
 def set_property(name, value, WINDOW1):
     WINDOW1.setProperty(name, value)
 
-def get_condition_code_by_name(name):
+def get_condition_code_by_name(name, is_num=False):
     code_to_name_map = ['tornado',
         'tropical-storm',
         'hurricane',
@@ -131,13 +131,15 @@ def get_condition_code_by_name(name):
     try:
         code = code_to_name_map.index(name)
     except ValueError:
-        code = 'na'
+        code = -1 if is_num else 'na'
     return str(code)
 
 
 # Source: https://github.com/xbmc/repo-scripts/blob/krypton/weather.yahoo/default.py
 # convert winddirection in degrees to a string (eg. NNW).
+# https://raw.githubusercontent.com/xbmc/xbmc/master/addons/resource.language.en_gb/resources/strings.po
 def WIND_DIR(deg):
+    deg = int(deg)
     if deg >= 349 or deg <=  11:
         return 71
     elif deg >= 12 and deg <= 33:
@@ -170,7 +172,7 @@ def WIND_DIR(deg):
         return 85
     elif deg >= 327 and deg <=  348:
         return 86
-    return 0
+    return 92
 
 
 # convert month numbers to short names (01 = jan)
