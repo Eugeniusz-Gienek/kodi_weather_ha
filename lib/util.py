@@ -467,7 +467,7 @@ def fix_condition_translation_codes(s):
     elif s == 'lightning-rainy':
         s = 'thundershowers'
     elif s == 'clear-night':
-        s = 'clear night'
+        s = 'clear'
     elif s == 'snowy':
         s = 'snow'
     elif s == 'pouring':
