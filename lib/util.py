@@ -462,4 +462,14 @@ def fix_condition_translation_codes(s):
         s = 'rain'
     elif s == 'partlycloudy':
         s = 'partly cloudy'
+    elif s == 'snowy-rainy':
+        s = 'snow and rain'
+    elif s == 'lightning-rainy':
+        s = 'thundershowers'
+    elif s == 'clear-night':
+        s = 'clear night'
+    elif s == 'snowy':
+        s = 'snow'
+    elif s == 'pouring':
+        s = 'showers'
     return s
