@@ -1,26 +1,15 @@
-import os
-import sys
-import socket
-import requests
-import _strptime
-import math
-import re
-import codecs
-import xbmc
 import calendar
+import math
 import time
-from datetime import datetime, timedelta
-import iso8601
-
 import urllib
-
-import xbmcgui
-import xbmcplugin
-import xbmcaddon
-import xbmcvfs
-from xbmc import log as xbmc_log
-
+from datetime import datetime, timedelta
 from math import sqrt
+
+import iso8601
+import xbmc
+import xbmcaddon
+import xbmcgui
+import xbmcvfs
 
 __addon__ = xbmcaddon.Addon()
 __addonname__ = __addon__.getAddonInfo('name')

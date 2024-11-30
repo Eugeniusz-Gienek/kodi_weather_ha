@@ -1,22 +1,8 @@
-import os
-import sys
-import urllib
-
-import xbmcgui
-import xbmcplugin
-import xbmcaddon
-import xbmc
-from xbmcvfs import translatePath
+import json
+import os.path
 
 import requests
-import json
-import yaml
-
-import time
-from datetime import datetime
-import iso8601
-
-from xbmc import log as xbmc_log
+from xbmcvfs import translatePath
 
 from .util import *
 
