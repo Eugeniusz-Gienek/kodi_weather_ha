@@ -31,15 +31,6 @@ def build_url(base_url, query):
     return base_url + '?' + urllib.parse.urlencode(query)
 
 
-def show_dialog(message):
-    xbmcgui.Dialog().ok(__addonname__, message)
-
-
-def log(txt, loglevel=xbmc.LOGDEBUG):  # https://forum.kodi.tv/showthread.php?tid=196442
-    if __addon__.getSetting("logEnabled") == "true":
-        message = u'[ HOME ASSISTANT WEATHER ]: %s: %s' % (__addonid__, txt)
-        xbmc.log(msg=message, level=loglevel)
-
 
 def utc_to_local(utc_dt):
     # get integer timestamp to avoid precision lost
@@ -63,11 +54,6 @@ def parse_time(event_date):
 
 def parse_datetime(event_date):
     return parse_date(event_date) + ' ' + parse_time(event_date)
-
-
-# set weather window property
-def set_property(name, value, window_1):
-    window_1.setProperty(name, value)
 
 
 def get_condition_code_by_name(name, is_num=False):

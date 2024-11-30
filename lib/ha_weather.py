@@ -4,81 +4,41 @@ import os.path
 import requests
 from xbmcvfs import translatePath
 
-from .util import *
+from lib.homeassistant_adapter import HomeAssistantAdapter, RequestError
+from lib.kodi_adapter import KodiHomeAssistantWeatherPluginAdapter, KodiAddonStrings, KodiLogLevel
 
-__addon__ = xbmcaddon.Addon()
-__addonname__ = __addon__.getAddonInfo('name')
-__addonversion__ = __addon__.getAddonInfo('version')
-__icon__ = __addon__.getAddonInfo('icon')
-__addonid__ = __addon__.getAddonInfo('id')
-__cwd__ = __addon__.getAddonInfo('path')
+# from .util import *
+
 
 # get settings...
-TEMPUNIT = xbmc.getRegion('tempunit')
-SPEEDUNIT = xbmc.getRegion('speedunit')
 MAX_REQUEST_RETRIES = 6
 RETRY_DELAY_S = 10
-default_temperature_unit = u'°C'
-default_pressure_unit = 'hPa'
-default_wind_speed_unit = 'm/s'
-default_precipitation_unit = 'mm'
-
-ha_key = __addon__.getSettingString('ha_key')
-ha_server = __addon__.getSettingString('ha_server')
-ha_weather_url = __addon__.getSettingString('ha_weather_url')
-ha_weather_url_method = __addon__.getSettingString('ha_weather_url_method')
-ha_weather_url_data = __addon__.getSettingString('ha_weather_url_data')
-ha_weather_daily_url = __addon__.getSettingString('ha_weather_daily_url')
-ha_weather_daily_url_method = __addon__.getSettingString('ha_weather_daily_url_method')
-ha_weather_daily_url_data = __addon__.getSettingString('ha_weather_daily_url_data')
-ha_weather_hourly_url = __addon__.getSettingString('ha_weather_hourly_url')
-ha_weather_hourly_url_method = __addon__.getSettingString('ha_weather_hourly_url_method')
-ha_weather_hourly_url_data = __addon__.getSettingString('ha_weather_hourly_url_data')
-ha_loc_title = __addon__.getSettingString('loc_title')
-ha_use_loc_title = __addon__.getSetting('useHALocName')
-
-# ... and fix them if necessary
-if ha_server and ha_server.endswith('/'):
-    ha_server = ha_server[:-1]
-if ha_weather_url and (not ha_weather_url.startswith('/')):
-    ha_weather_url = '/' + ha_weather_url
-if ha_weather_daily_url and (not ha_weather_daily_url.startswith('/')):
-    ha_weather_daily_url = '/' + ha_weather_daily_url
-if ha_weather_hourly_url and (not ha_weather_hourly_url.startswith('/')):
-    ha_weather_hourly_url = '/' + ha_weather_hourly_url
-
-headers = {'Authorization': 'Bearer ' + ha_key, 'Content-Type': 'application/json'}
-
-WND = None
 
 
-class Main:
-    def __init__(self, *args, **kwargs):
-        log('Home Assistant Weather started.')
-        self.MONITOR = MyMonitor()
-        mode = kwargs['mode']
-        global WND
-        WND = kwargs['w']
-        self.settings_provided = ha_key and ha_server and ha_weather_url and ha_weather_daily_url and ha_weather_hourly_url
-        if not self.settings_provided:
-            show_dialog(__addon__.getLocalizedString(30010))
-            log('Settings for Home Assistant Weather not yet provided. Plugin will not work.')
-            # raise Exception((ha_key, ha_server, ha_weather_url, ha_weather_daily_url, ha_weather_hourly_url))
+class KodiHomeAssistantWeatherPlugin:
+    def __init__(self, kodi_adapter: KodiHomeAssistantWeatherPluginAdapter):
+        self._kodi_adapter = kodi_adapter
+        self._kodi_adapter.log("Home Assistant Weather started.")
+
+        if not self._kodi_adapter.required_settings_done:
+            self._kodi_adapter.dialog(message_id=KodiAddonStrings.SETTINGS_REQUIRED)
+            self._kodi_adapter.log("Settings for Home Assistant Weather not yet provided. Plugin will not work.")
         else:
             # Test connection / get version
-            response = self.get_request('/config')
-            if response is not None:
-                log('Response from server: ' + str(response.content))
-                self.get_forecasts()
-                # parsedResponse = json.loads(response.text)
-            else:
-                log('Response from server is NONE!')
-                show_dialog('Response from server is NONE!')
-                self.clear_props()
-        log('Home Assistant Weather init finished.')
+            try:
+                forecast = HomeAssistantAdapter.get_forecast(
+                    forecast_url=self._kodi_adapter.home_assistant_forecast_url,
+                    token=self._kodi_adapter.home_assistant_token
+                )
+            except RequestError as e:
+                self._kodi_adapter.log(
+                    message=f"Could not retrieve forecast from Home Assistant: {e}", level=KodiLogLevel.ERROR
+                )
+                self._kodi_adapter.dialog(message_id=KodiAddonStrings.HOMEASSISTANT_UNREACHABLE)
+                self._kodi_adapter.clear_weather_properties()
+        self._kodi_adapter.log("Home Assistant Weather init finished.")
 
     def get_request(self, api_ext):
-        global headers, ha_server
         retry = 0
         r = None
         while (retry < MAX_REQUEST_RETRIES) and (not self.MONITOR.abortRequested()):
@@ -98,34 +58,9 @@ class Main:
             self.MONITOR.waitForAbort(RETRY_DELAY_S)
         show_dialog(__addon__.getLocalizedString(30013))  # Unknown error: Check IP address or if server is online
 
-    def post_request(self, api_ext, payload):
-        global headers, ha_server
-        retry = 0
-        r = None
-        while (retry < MAX_REQUEST_RETRIES) and (not self.MONITOR.abortRequested()):
-            try:
-                log('Trying to make a post request to ' + ha_server + api_ext + ' with payload: ' + payload)
-                r = requests.post(ha_server + api_ext, headers=headers, data=payload)
-                log('GetRequest status code is: ' + str(r.status_code))
-                if r.status_code == 401:
-                    show_dialog(__addon__.getLocalizedString(30011))  # Error 401: Check your token
-                elif r.status_code == 405:
-                    show_dialog(__addon__.getLocalizedString(30012))  # Error 405: Method not allowed
-                else:
-                    return r
-            except:
-                log('Status code error is: ' + str(r.raise_for_status() if r else 'unknown'))
-            retry += 1
-            self.MONITOR.waitForAbort(RETRY_DELAY_S)
-        show_dialog(__addon__.getLocalizedString(30013))  # Unknown error: Check IP address or if server is online
-
     def get_forecasts(self):
         global ha_weather_url, ha_weather_daily_url, ha_server, ha_key
         log('Getting forecasts from Home Assistant server.')
-        temperature_unit = default_temperature_unit
-        pressure_unit = default_pressure_unit
-        wind_speed_unit = default_wind_speed_unit
-        precipitation_unit = default_precipitation_unit
         # Current weather
         response = self.get_request(ha_weather_url)
         if response is not None:
@@ -134,7 +69,7 @@ class Main:
                 parsed_response = json.loads(response.text)
             except json.decoder.JSONDecodeError:
                 show_dialog(__addon__.getLocalizedString(30014))
-                self.clear_props()
+                self._kodi_adapter.clear_weather_properties()
                 raise Exception(
                     'Got incorrect response from Home Assistant Weather server (request was to ' + ha_weather_url + ' with data: ' + ha_weather_url_data + ') and response received: ' + response.text)
             if parsed_response.get('attributes') is not None:
@@ -202,12 +137,12 @@ class Main:
             else:
                 log('The response dict from get_forecast url does not contain forecast key. This is unexpected.')
                 show_dialog(__addon__.getLocalizedString(30014))
-                self.clear_props()
+                self._kodi_adapter.clear_weather_properties()
                 return
         else:
             log('Response (weather current) from server is NONE!')
             show_dialog('Response (weather current) from server is NONE!')
-            self.clear_props()
+            self._kodi_adapter.clear_weather_properties()
             return
         # Daily
         response = self.get_request(ha_weather_daily_url)
@@ -217,7 +152,7 @@ class Main:
                 parsed_response = json.loads(response.text)
             except json.decoder.JSONDecodeError:
                 show_dialog(__addon__.getLocalizedString(30014))
-                self.clear_props()
+                self._kodi_adapter.clear_weather_properties()
                 raise Exception(
                     'Got incorrect response from Home Assistant Weather server (request was to ' + ha_weather_daily_url + ' with data: ' + ha_weather_hourly_url_data + ') and response received: ' + response.text)
             if parsed_response.get('attributes') is not None:
@@ -280,12 +215,12 @@ class Main:
             else:
                 log('The response dict from get_forecast url does not contain forecast key. This is unexpected.')
                 show_dialog(__addon__.getLocalizedString(30014))
-                self.clear_props()
+                self._kodi_adapter.clear_weather_properties()
                 return
         else:
             log('Response (weather daily) from server is NONE!')
             show_dialog('Response (weather daily) from server is NONE')
-            self.clear_props()
+            self._kodi_adapter.clear_weather_properties()
             return
         # Hourly weather
         response = self.get_request(ha_weather_hourly_url)
@@ -295,7 +230,7 @@ class Main:
                 parsed_response = json.loads(response.text)
             except json.decoder.JSONDecodeError:
                 show_dialog(__addon__.getLocalizedString(30014))
-                self.clear_props()
+                self._kodi_adapter.clear_weather_properties()
                 raise Exception(
                     'Got incorrect response from Home Assistant Weather server (request was to ' + ha_weather_daily_url + ' with data: ' + ha_weather_daily_url_data + ') and response received: ' + response.text)
             if parsed_response.get('attributes') is not None:
@@ -337,34 +272,10 @@ class Main:
             else:
                 log('The response dict from get_forecast url does not contain forecast key. This is unexpected.')
                 show_dialog(__addon__.getLocalizedString(30014))
-                self.clear_props()
+                self._kodi_adapter.clear_weather_properties()
                 return
         else:
             log('Response (weather daily) from server is NONE!')
             show_dialog('Response (weather daily) from server is NONE')
-            self.clear_props()
+            self._kodi_adapter.clear_weather_properties()
             return
-
-    def clear_props(self):
-        set_property('Current.Condition', 'N/A', WND)
-        set_property('Current.Temperature', '0', WND)
-        set_property('Current.Wind', '0', WND)
-        set_property('Current.WindDirection', 'N/A', WND)
-        set_property('Current.Humidity', '0', WND)
-        set_property('Current.FeelsLike', '0', WND)
-        set_property('Current.UVIndex', '0', WND)
-        set_property('Current.DewPoint', '0', WND)
-        set_property('Current.OutlookIcon', 'na.png', WND)
-        set_property('Current.FanartCode', 'na', WND)
-        for count in range(0, MAXDAYS):
-            set_property('Day%i.Title' % count, 'N/A', WND)
-            set_property('Day%i.HighTemp' % count, '0', WND)
-            set_property('Day%i.LowTemp' % count, '0', WND)
-            set_property('Day%i.Outlook' % count, 'N/A', WND)
-            set_property('Day%i.OutlookIcon' % count, 'na.png', WND)
-            set_property('Day%i.FanartCode' % count, 'na', WND)
-
-
-class MyMonitor(xbmc.Monitor):
-    def __init__(self, *args, **kwargs):
-        xbmc.Monitor.__init__(self)

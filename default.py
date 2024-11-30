@@ -1,8 +1,4 @@
-import sys
-from lib import ha_weather
-import xbmcgui
-
-WINDOW = xbmcgui.Window(12600)
+from lib.ha_weather import KodiHomeAssistantWeatherPlugin
 
 if __name__ == '__main__':
-    ha_weather.Main(mode=sys.argv[1], w=WINDOW)
+    KodiHomeAssistantWeatherPlugin()
