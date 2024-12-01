@@ -1,70 +1,12 @@
 import urllib.parse
-from dataclasses import dataclass
-from typing import Dict, Union, List
+from typing import Dict, Union
 
 import requests
 from requests import RequestException
 
-
-@dataclass
-class HomeAssistantCurrentForecast:
-    temperature: float
-    dew_point: float
-    temperature_unit: str
-    humidity: float
-    cloud_coverage: float
-    uv_index: float
-    pressure: float
-    pressure_unit: str
-    wind_bearing: float
-    wind_speed: float
-    wind_speed_unit: str
-    visibility_unit: str
-    precipitation_unit: str
-    attribution: str
-    friendly_name: str
-    supported_features: int
-
-
-@dataclass
-class HomeAssistantHourlyForecast:
-    condition: str
-    datetime: str
-    wind_bearing: float
-    cloud_coverage: float
-    uv_index: float
-    temperature: float
-    wind_speed: float
-    precipitation: float
-    humidity: float
-
-
-@dataclass
-class HomeAssistantDailyForecast:
-    condition: str
-    datetime: str
-    wind_bearing: float
-    temperature: float
-    templow: float
-    wind_speed: float
-    precipitation: float
-    humidity: float
-    uv_index: Union[float, None] = None
-
-
-@dataclass
-class HomeAssistantForecast:
-    current: HomeAssistantCurrentForecast
-    hourly: List[HomeAssistantHourlyForecast]
-    daily: List[HomeAssistantDailyForecast]
-
-
-@dataclass
-class RequestError(Exception):
-    error_code: int
-    url: str
-    method: str
-    body: str
+from ._errors import RequestError
+from ._forecast import (HomeAssistantForecast, _HomeAssistantCurrentForecast, _HomeAssistantHourlyForecast,
+                        _HomeAssistantDailyForecast)
 
 
 class HomeAssistantAdapter:
@@ -103,13 +45,13 @@ class HomeAssistantAdapter:
             url=forecast_url, token=token, post=True, data={"entity_id": entity_id, "type": "daily"}
         )
         return HomeAssistantForecast(
-            current=HomeAssistantCurrentForecast(**current.json()["attributes"]),
+            current=_HomeAssistantCurrentForecast(**current.json()["attributes"]),
             hourly=[
-                HomeAssistantHourlyForecast(**hourly_forecast)
+                _HomeAssistantHourlyForecast(**hourly_forecast)
                 for hourly_forecast in hourly.json()["service_response"][entity_id]["forecast"]
             ],
             daily=[
-                HomeAssistantDailyForecast(**daily_forecast)
+                _HomeAssistantDailyForecast(**daily_forecast)
                 for daily_forecast in daily.json()["service_response"][entity_id]["forecast"]
             ],
         )
