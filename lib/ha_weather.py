@@ -1,7 +1,6 @@
 import json
 import os.path
 
-import requests
 from xbmcvfs import translatePath
 
 from lib.homeassistant_adapter import HomeAssistantAdapter, RequestError
@@ -24,39 +23,28 @@ class KodiHomeAssistantWeatherPlugin:
             self._kodi_adapter.dialog(message_id=KodiAddonStrings.SETTINGS_REQUIRED)
             self._kodi_adapter.log("Settings for Home Assistant Weather not yet provided. Plugin will not work.")
         else:
-            # Test connection / get version
-            try:
-                forecast = HomeAssistantAdapter.get_forecast(
-                    forecast_url=self._kodi_adapter.home_assistant_forecast_url,
-                    token=self._kodi_adapter.home_assistant_token
-                )
-            except RequestError as e:
-                self._kodi_adapter.log(
-                    message=f"Could not retrieve forecast from Home Assistant: {e}", level=KodiLogLevel.ERROR
-                )
-                self._kodi_adapter.dialog(message_id=KodiAddonStrings.HOMEASSISTANT_UNREACHABLE)
-                self._kodi_adapter.clear_weather_properties()
+            self.get_forecast_handling_errors()
         self._kodi_adapter.log("Home Assistant Weather init finished.")
 
-    def get_request(self, api_ext):
-        retry = 0
-        r = None
-        while (retry < MAX_REQUEST_RETRIES) and (not self.MONITOR.abortRequested()):
-            try:
-                log('Trying to make a get request to ' + ha_server + api_ext)
-                r = requests.get(ha_server + api_ext, headers=headers)
-                log('GetRequest status code is: ' + str(r.status_code))
-                if r.status_code == 401:
-                    show_dialog(__addon__.getLocalizedString(30011))  # Error 401: Check your token
-                elif r.status_code == 405:
-                    show_dialog(__addon__.getLocalizedString(30012))  # Error 405: Method not allowed
-                elif r.status_code == 200:
-                    return r
-            except:
-                log('Status code error is: ' + str(r.raise_for_status() if r else 'unknown'))
-            retry += 1
-            self.MONITOR.waitForAbort(RETRY_DELAY_S)
-        show_dialog(__addon__.getLocalizedString(30013))  # Unknown error: Check IP address or if server is online
+    def get_forecast_handling_errors(self):
+        try:
+            HomeAssistantAdapter.get_forecast(
+                server_url=self._kodi_adapter.home_assistant_url,
+                entity_id=self._kodi_adapter.home_assistant_entity,
+                token=self._kodi_adapter.home_assistant_token
+            )
+        except RequestError as e:
+            self._kodi_adapter.log(
+                message=f"Could not retrieve forecast from Home Assistant: {e.error_code}", level=KodiLogLevel.ERROR
+            )
+            if e.error_code == 401:
+                message = KodiAddonStrings.HOMEASSISTANT_UNAUTHORIZED
+            elif e.error_code == -1:
+                message = KodiAddonStrings.HOMEASSISTANT_UNREACHABLE
+            else:
+                message = KodiAddonStrings.HOMEASSISTANT_UNEXPECTED_RESPONSE
+            self._kodi_adapter.dialog(message_id=message)
+            self._kodi_adapter.clear_weather_properties()
 
     def get_forecasts(self):
         global ha_weather_url, ha_weather_daily_url, ha_server, ha_key

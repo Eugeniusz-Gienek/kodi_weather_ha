@@ -1,14 +1,12 @@
-import logging
-import urllib.parse
 from dataclasses import dataclass
 from enum import Enum, IntEnum
-from typing import TypeVar, Type
+from typing import Type
 
 import xbmc
 import xbmcaddon
 import xbmcgui
 
-_Setting_Type = TypeVar('_Setting_Type', bool, int, float, str)
+_Setting_Type = bool | int | float | str
 
 
 @dataclass
@@ -22,9 +20,7 @@ class HomeAssistantWeatherPluginSettings(_HomeAssistantWeatherPluginSetting):
     USE_HOME_ASSISTANT_LOCATION_NAME = _HomeAssistantWeatherPluginSetting(setting_id="useHALocName", setting_type=bool)
     HOME_ASSISTANT_SERVER = _HomeAssistantWeatherPluginSetting(setting_id="ha_server", setting_type=str)
     HOME_ASSISTANT_TOKEN = _HomeAssistantWeatherPluginSetting(setting_id="ha_key", setting_type=str)
-    HOME_ASSISTANT_WEATHER_PATH = _HomeAssistantWeatherPluginSetting(setting_id="ha_weather_url", setting_type=str)
-    HOME_ASSISTANT_WEATHER_REQ_METHOD = _HomeAssistantWeatherPluginSetting(setting_id="ha_weather_url_method", setting_type=str)
-    HOME_ASSISTANT_WEATHER_REQ_DATA = _HomeAssistantWeatherPluginSetting(setting_id="ha_weather_url_data", setting_type=str)
+    HOME_ASSISTANT_WEATHER_FORECAST_ENTITY_ID = _HomeAssistantWeatherPluginSetting(setting_id="ha_weather_forecast_entity_id", setting_type=str)
     LOG_ENABLED = _HomeAssistantWeatherPluginSetting(setting_id="logEnabled", setting_type=bool)
     # TODO: Is this necessary?
     LOCATION_1 = _HomeAssistantWeatherPluginSetting(setting_id="location1", setting_type=str)
@@ -41,7 +37,9 @@ class _KodiMagicValues:
 
 class KodiAddonStrings(IntEnum):
     SETTINGS_REQUIRED = 30010
+    HOMEASSISTANT_UNAUTHORIZED = 30011
     HOMEASSISTANT_UNREACHABLE = 30013
+    HOMEASSISTANT_UNEXPECTED_RESPONSE = 30014
 
 
 class KodiLogLevel(Enum):
@@ -127,10 +125,12 @@ class KodiHomeAssistantWeatherPluginAdapter:
             return self._kodi_addon.getSetting(id=setting.setting_id)
 
     @property
-    def home_assistant_forecast_url(self) -> str:
-        base_url = self._get_setting(setting=HomeAssistantWeatherPluginSettings.HOME_ASSISTANT_SERVER)
-        path = self._get_setting(setting=HomeAssistantWeatherPluginSettings.HOME_ASSISTANT_WEATHER_PATH)
-        return urllib.parse.urljoin(base=base_url, url=path)
+    def home_assistant_url(self) -> str:
+        return self._get_setting(setting=HomeAssistantWeatherPluginSettings.HOME_ASSISTANT_SERVER)
+
+    @property
+    def home_assistant_entity(self) -> str:
+        return self._get_setting(setting=HomeAssistantWeatherPluginSettings.HOME_ASSISTANT_WEATHER_FORECAST_ENTITY_ID)
 
     @property
     def home_assistant_token(self) -> str:

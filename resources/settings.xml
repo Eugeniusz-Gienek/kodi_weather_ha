@@ -8,7 +8,7 @@
         <setting id="ha_server"                     type="text" label="30002" default="" />
         <setting id="ha_key"                        type="text" label="30003" default="" />
         <setting type="sep"/>
-        <setting id="ha_weather_url"                type="text" label="30004" default="/api/states/weather.forecast_home" />
+        <setting id="ha_weather_forecast_entity_id" type="text" label="30004" default="weather.forecast_home" />
         <setting type="sep"/>
         <setting id="location1"                     label="Location 1" type="action" action="RunScript($ID,location1)" default=""/>
     </category>
