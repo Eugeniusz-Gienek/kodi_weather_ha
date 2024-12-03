@@ -2,13 +2,30 @@ from dataclasses import dataclass
 from typing import List, Union
 
 
+class HomeAssistantWeatherCondition:
+    CLEAR_NIGHT = "clear-night"
+    CLOUDY = "cloudy"
+    FOG = "fog"
+    HAIL = "hail"
+    LIGHTNING = "lightning"
+    LIGHTNING_RAINY = "lightning-rainy"
+    PARTLY_CLOUDY = "partlycloudy"
+    POURING = "pouring"
+    RAINY = "rainy"
+    SNOWY = "snowy"
+    SNOWY_RAINY = "snowy-rainy"
+    SUNNY = "sunny"
+    WINDY = "windy"
+    WINDY_CLOUDY = "windy-cloudy"
+    EXCEPTIONAL = "exceptional"
+
+
 @dataclass
 class _HomeAssistantForecastCommon:
     wind_bearing: float
     wind_speed: float
     temperature: float
     humidity: float
-    uv_index: float
 
 
 @dataclass
@@ -25,31 +42,36 @@ class _HomeAssistantForecastMeta:
 
 @dataclass
 class _HomeAssistantFutureForecast:
-    condition: str
+    condition: HomeAssistantWeatherCondition
     datetime: str
     precipitation: float
 
+    def __post_init__(self):
+        self.condition = HomeAssistantWeatherCondition(self.condition)
+
 
 @dataclass
-class _HomeAssistantCurrentForecast(_HomeAssistantForecastCommon, _HomeAssistantForecastMeta):
+class HomeAssistantCurrentForecast(_HomeAssistantForecastCommon, _HomeAssistantForecastMeta):
     dew_point: float
     cloud_coverage: float
     pressure: float
+    uv_index: float
 
 
 @dataclass
-class _HomeAssistantHourlyForecast(_HomeAssistantForecastCommon, _HomeAssistantFutureForecast):
+class HomeAssistantHourlyForecast(_HomeAssistantForecastCommon, _HomeAssistantFutureForecast):
     cloud_coverage: float
+    uv_index: float
 
 
 @dataclass
-class _HomeAssistantDailyForecast(_HomeAssistantForecastCommon, _HomeAssistantFutureForecast):
+class HomeAssistantDailyForecast(_HomeAssistantForecastCommon, _HomeAssistantFutureForecast):
     templow: float
     uv_index: Union[float, None] = None
 
 
 @dataclass
 class HomeAssistantForecast:
-    current: _HomeAssistantCurrentForecast
-    hourly: List[_HomeAssistantHourlyForecast]
-    daily: List[_HomeAssistantDailyForecast]
+    current: HomeAssistantCurrentForecast
+    hourly: List[HomeAssistantHourlyForecast]
+    daily: List[HomeAssistantDailyForecast]

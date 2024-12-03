@@ -58,13 +58,69 @@ class KodiConditionCode(IntEnum):
         return self.name.lower().replace('_', ' ')
 
 
+class KodiWindDirectionCode(IntEnum):
+    # https://raw.githubusercontent.com/xbmc/xbmc/master/addons/resource.language.en_gb/resources/strings.po from #71
+    N = 71
+    NNE = 72
+    NE = 73
+    ENE = 74
+    E = 75
+    ESE = 76
+    SE = 77
+    SSE = 78
+    S = 79
+    SSW = 80
+    SW = 81
+    WSW = 82
+    W = 83
+    WNW = 84
+    NW = 85
+    NNW = 86
+    VAR = 87
+
+    @staticmethod
+    def from_bearing(bearing: float):
+        if bearing >= 349 or bearing <= 11:
+            return KodiWindDirectionCode.N
+        elif 12 <= bearing <= 33:
+            return KodiWindDirectionCode.NNE
+        elif 34 <= bearing <= 56:
+            return KodiWindDirectionCode.NE
+        elif 57 <= bearing <= 78:
+            return KodiWindDirectionCode.ENE
+        elif 79 <= bearing <= 101:
+            return KodiWindDirectionCode.E
+        elif 102 <= bearing <= 123:
+            return KodiWindDirectionCode.ESE
+        elif 124 <= bearing <= 146:
+            return KodiWindDirectionCode.SE
+        elif 147 <= bearing <= 168:
+            return KodiWindDirectionCode.SSE
+        elif 169 <= bearing <= 191:
+            return KodiWindDirectionCode.S
+        elif 192 <= bearing <= 213:
+            return KodiWindDirectionCode.SSW
+        elif 214 <= bearing <= 236:
+            return KodiWindDirectionCode.SW
+        elif 237 <= bearing <= 258:
+            return KodiWindDirectionCode.WSW
+        elif 259 <= bearing <= 281:
+            return KodiWindDirectionCode.W
+        elif 282 <= bearing <= 303:
+            return KodiWindDirectionCode.WNW
+        elif 304 <= bearing <= 326:
+            return KodiWindDirectionCode.NW
+        elif 327 <= bearing <= 348:
+            return KodiWindDirectionCode.NNW
+        return KodiWindDirectionCode.VAR
+
+
 @dataclass
 class _KodiForecastCommon:
-    temperature: float              # unit: °C
-    wind_speed: float               # unit: kph
-    wind_direction: str             # eg: NNE
-    precipitation: int              # unit: %
-    condition: KodiConditionCode
+    temperature: float                      # unit: °C
+    wind_speed: float                       # unit: kph
+    wind_direction: KodiWindDirectionCode   # eg: NNE
+    precipitation: int                      # unit: %
 
 
 @dataclass
@@ -86,6 +142,7 @@ class _KodiConditionedForecastCommon:
     def fanart_code(self) -> int:
         return self.condition.value
 
+    @property
     def outlook_icon(self) -> str:
         return f"{self.condition.value}.png"
 
@@ -93,6 +150,11 @@ class _KodiConditionedForecastCommon:
 @dataclass
 class _KodiFutureForecastCommon:
     timestamp: datetime
+
+
+@dataclass
+class KodiGeneralForecastData:
+    location: str
 
 
 @dataclass
@@ -115,6 +177,7 @@ class KodiDailyForecastData(_KodiForecastCommon, _KodiConditionedForecastCommon,
 
 @dataclass
 class KodiForecastData:
+    General: KodiGeneralForecastData
     Current: KodiCurrentForecastData
     HourlyForecasts: List[KodiHourlyForecastData]
     DailyForecasts: List[KodiDailyForecastData]

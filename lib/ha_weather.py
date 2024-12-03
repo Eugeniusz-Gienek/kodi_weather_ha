@@ -1,13 +1,15 @@
-import json
-import os.path
+import math
+from datetime import datetime
+from typing import Union
 
-from xbmcvfs import translatePath
-
-from lib.homeassistant_adapter import HomeAssistantAdapter, RequestError
-from lib.kodi_adapter import KodiHomeAssistantWeatherPluginAdapter, KodiAddonStrings, KodiLogLevel
-
-# from .util import *
-
+from lib.homeassistant import (
+    HomeAssistantAdapter, RequestError, HomeAssistantForecast, HomeAssistantHourlyForecast, HomeAssistantDailyForecast,
+    HomeAssistantWeatherCondition
+)
+from lib.kodi import (
+    KodiHomeAssistantWeatherPluginAdapter, KodiAddonStrings, KodiLogLevel, KodiGeneralForecastData, KodiForecastData,
+    KodiCurrentForecastData, KodiWindDirectionCode, KodiConditionCode, KodiHourlyForecastData, KodiDailyForecastData
+)
 
 # get settings...
 MAX_REQUEST_RETRIES = 6
@@ -23,12 +25,12 @@ class KodiHomeAssistantWeatherPlugin:
             self._kodi_adapter.dialog(message_id=KodiAddonStrings.SETTINGS_REQUIRED)
             self._kodi_adapter.log("Settings for Home Assistant Weather not yet provided. Plugin will not work.")
         else:
-            self.get_forecast_handling_errors()
+            self.apply_forecast()
         self._kodi_adapter.log("Home Assistant Weather init finished.")
 
-    def get_forecast_handling_errors(self):
+    def _get_forecast_handling_errors(self) -> HomeAssistantForecast:
         try:
-            HomeAssistantAdapter.get_forecast(
+            return HomeAssistantAdapter.get_forecast(
                 server_url=self._kodi_adapter.home_assistant_url,
                 entity_id=self._kodi_adapter.home_assistant_entity,
                 token=self._kodi_adapter.home_assistant_token
@@ -44,226 +46,153 @@ class KodiHomeAssistantWeatherPlugin:
             else:
                 message = KodiAddonStrings.HOMEASSISTANT_UNEXPECTED_RESPONSE
             self._kodi_adapter.dialog(message_id=message)
-            self._kodi_adapter.clear_weather_properties()
 
-    def get_forecasts(self):
-        global ha_weather_url, ha_weather_daily_url, ha_server, ha_key
-        log('Getting forecasts from Home Assistant server.')
-        # Current weather
-        response = self.get_request(ha_weather_url)
-        if response is not None:
-            log('Response (weather) from server: ' + str(response.content))
-            try:
-                parsed_response = json.loads(response.text)
-            except json.decoder.JSONDecodeError:
-                show_dialog(__addon__.getLocalizedString(30014))
-                self._kodi_adapter.clear_weather_properties()
-                raise Exception(
-                    'Got incorrect response from Home Assistant Weather server (request was to ' + ha_weather_url + ' with data: ' + ha_weather_url_data + ') and response received: ' + response.text)
-            if parsed_response.get('attributes') is not None:
-                forecast = parsed_response['attributes']
-                # HA format
-                temperature_unit = forecast['temperature_unit']
-                pressure_unit = forecast['pressure_unit']
-                wind_speed_unit = forecast['wind_speed_unit']
-                precipitation_unit = forecast['precipitation_unit']
-                loc_friendly_name = forecast['friendly_name']
-                forecast_description = forecast['attribution']
-                loc = ha_loc_title
-                if ha_use_loc_title == "true":
-                    loc = loc_friendly_name
-                if 'state' not in parsed_response:
-                    parsed_response['state'] = 'n/a'
-                if 'last_updated' not in parsed_response:
-                    parsed_response['last_updated'] = 'n/a'
-                if 'temperature' not in forecast:
-                    forecast['temperature'] = 0
-                if 'wind_speed' not in forecast:
-                    forecast['wind_speed'] = 0
-                if 'wind_bearing' not in forecast:
-                    forecast['wind_bearing'] = 0
-                if 'humidity' not in forecast:
-                    forecast['humidity'] = 0
-                if 'dew_point' not in forecast:
-                    forecast['dew_point'] = 0
-                if 'pressure' not in forecast:
-                    forecast['pressure'] = 0
-                set_property('Location1', loc, WND)
-                set_property('Locations', '1', WND)
-                set_property('ForecastLocation', loc, WND)
-                set_property('RegionalLocation', loc, WND)
-                set_property('Updated', parsed_response['last_updated'], WND)
-                set_property('Current.Location', loc, WND)
-                set_property('Current.Condition', str(fix_condition_translation_codes(parsed_response['state'])), WND)
-                set_property('Current.Temperature', str(convert_temp(forecast['temperature'], temperature_unit, 'C')),
-                             WND)
-                set_property('Current.UVIndex', '0', WND)
-                set_property('Current.OutlookIcon', '%s.png' % get_condition_code_by_name(parsed_response['state']),
-                             WND)
-                set_property('Current.FanartCode', get_condition_code_by_name(parsed_response['state']), WND)
-                set_property('Current.Wind', str(convert_speed(forecast['wind_speed'], wind_speed_unit, 'kmh')), WND)
-                set_property('Current.WindDirection', xbmc.getLocalizedString(wind_dir(forecast['wind_bearing'])), WND)
-                set_property('Current.Humidity', str(forecast['humidity']), WND)
-                set_property('Current.DewPoint', str(convert_temp(forecast['dew_point'], temperature_unit, 'C')), WND)
-                set_property('Current.FeelsLike',
-                             str(calculate_feels_like(convert_temp(forecast['temperature'], temperature_unit, 'C'),
-                                                      forecast['humidity'])), WND)
-                set_property('Current.WindChill', convert_temp(
-                    windchill(int(convert_temp(forecast['temperature'], temperature_unit, 'F')),
-                              int(convert_speed(forecast['wind_speed'], wind_speed_unit, 'mph'))), 'F') + TEMPUNIT, WND)
-                set_property('Current.Pressure', str(forecast['pressure']), WND)
-                set_property('Current.IsFetched', 'true', WND)
-                set_property('Forecast.City', loc, WND)
-                set_property('Forecast.Country', loc, WND)
-                set_property('Forecast.Latitude', '0', WND)
-                set_property('Forecast.Longitude', '0', WND)
-                set_property('Forecast.IsFetched', 'true', WND)
-                set_property('Forecast.Updated', parsed_response['last_updated'], WND)
-                set_property('WeatherProvider', 'Home Assistant Weather', WND)
-                set_property('WeatherProviderLogo', translatePath(os.path.join(__cwd__, 'resources', 'banner.png')),
-                             WND)
-            else:
-                log('The response dict from get_forecast url does not contain forecast key. This is unexpected.')
-                show_dialog(__addon__.getLocalizedString(30014))
-                self._kodi_adapter.clear_weather_properties()
-                return
+    @staticmethod
+    def __translate_hourly_ha_forecast_to_kodi_forecast(
+            ha_forecast: HomeAssistantHourlyForecast) -> KodiHourlyForecastData:
+        return KodiHourlyForecastData(
+            temperature=ha_forecast.temperature,  # TODO: Ensure °C
+            wind_speed=ha_forecast.wind_speed,  # TODO: Ensure kph
+            wind_direction=KodiWindDirectionCode.from_bearing(bearing=ha_forecast.wind_bearing),
+            precipitation=int(ha_forecast.precipitation),
+            humidity=ha_forecast.humidity,
+            feels_like=KodiHomeAssistantWeatherPlugin.__calculate_feels_like(
+                temperature_celsius=ha_forecast.temperature,
+                wind_speed_kph=ha_forecast.wind_speed,
+            ),  # TODO: Ensure °C, Ensure kph
+            dew_point=KodiHomeAssistantWeatherPlugin.__calculate_dew_point(
+                temperature_celsius=ha_forecast.temperature,
+                humidity_percent=ha_forecast.humidity
+            ),  # TODO: Ensure °C
+            condition=KodiHomeAssistantWeatherPlugin.__translate_condition(
+                ha_condition=ha_forecast.condition
+            ),
+            timestamp=datetime.fromisoformat(ha_forecast.datetime),
+            pressure=None,
+        )
+
+    @staticmethod
+    def __translate_daily_ha_forecast_to_kodi_forecast(
+            ha_forecast: HomeAssistantDailyForecast) -> KodiDailyForecastData:
+        return KodiDailyForecastData(
+            temperature=ha_forecast.temperature,  # TODO: Ensure °C
+            wind_speed=ha_forecast.wind_speed,  # TODO: Ensure kph
+            wind_direction=KodiWindDirectionCode.from_bearing(bearing=ha_forecast.wind_bearing),
+            precipitation=int(ha_forecast.precipitation),
+            condition=KodiHomeAssistantWeatherPlugin.__translate_condition(
+                ha_condition=ha_forecast.condition
+            ),
+            timestamp=datetime.fromisoformat(ha_forecast.datetime),
+            low_temperature=ha_forecast.templow  # TODO: Ensure °C
+        )
+
+    @staticmethod
+    def __translate_ha_forecast_to_kodi_forecast(ha_forecast: HomeAssistantForecast) -> KodiForecastData:
+        return KodiForecastData(
+            General=KodiGeneralForecastData(
+                location=ha_forecast.current.friendly_name
+            ),
+            Current=KodiCurrentForecastData(
+                temperature=ha_forecast.current.temperature,  # TODO: Ensure °C
+                wind_speed=ha_forecast.current.wind_speed,  # TODO: Ensure kph
+                wind_direction=KodiWindDirectionCode.from_bearing(bearing=ha_forecast.current.wind_bearing),
+                precipitation=None,
+                condition=KodiHomeAssistantWeatherPlugin.__translate_condition(
+                    ha_condition=ha_forecast.hourly[0].condition if len(ha_forecast.hourly) > 0 else None,
+                ),
+                humidity=ha_forecast.current.humidity,
+                feels_like=KodiHomeAssistantWeatherPlugin.__calculate_feels_like(
+                    temperature_celsius=ha_forecast.current.temperature,
+                    wind_speed_kph=ha_forecast.current.wind_speed,
+                ),  # TODO: Ensure °C, Ensure kph
+                dew_point=KodiHomeAssistantWeatherPlugin.__calculate_dew_point(
+                    temperature_celsius=ha_forecast.current.temperature,
+                    humidity_percent=ha_forecast.current.humidity
+                ),  # TODO: Ensure °C
+                uv_index=int(ha_forecast.current.uv_index),
+                cloudiness=int(ha_forecast.current.cloud_coverage),
+            ),
+            HourlyForecasts=[
+                KodiHomeAssistantWeatherPlugin.__translate_hourly_ha_forecast_to_kodi_forecast(
+                    ha_forecast=hourly_forecast
+                )
+                for hourly_forecast in ha_forecast.hourly
+            ],
+            DailyForecasts=[
+                KodiHomeAssistantWeatherPlugin.__translate_daily_ha_forecast_to_kodi_forecast(
+                    ha_forecast=daily_forecast
+                )
+                for daily_forecast in ha_forecast.daily
+            ]
+        )
+
+    @staticmethod
+    def __calculate_dew_point(temperature_celsius: float, humidity_percent: float) -> float:
+        # obtain saturation vapor pressure (pressure at which water in air will condensate)
+        vapor_pressure_sat = 6.11 * 10.0 ** (7.5 * temperature_celsius / (237.7 + temperature_celsius))
+        # we set a minimum of .075 % to make the math defined
+        humidity_percent = max(humidity_percent, 0.075)
+        # calculate actual vapor pressure (water in air will condensate at approx. 100 % humidity), linear correlation
+        vapor_pressure_act = (humidity_percent * vapor_pressure_sat) / 100
+        # Now you are ready to use the following formula to obtain the dewpoint temperature.
+        return (-430.22 + 237.7 * math.log(vapor_pressure_act)) / (-math.log(vapor_pressure_act) + 19.08)
+
+    @staticmethod
+    def __calculate_feels_like(temperature_celsius: float, wind_speed_kph: float) -> float:
+        # Model: Wind Chill JAG/TI Environment Canada
+        # see https://en.wikipedia.org/wiki/Wind_chill#North_American_and_United_Kingdom_wind_chill_index
+        return (
+                + 13.12
+                + 0.6215 * temperature_celsius
+                - 11.37 * wind_speed_kph ** 0.16
+                + 0.3965 * temperature_celsius * wind_speed_kph ** 0.16
+        )
+
+    @staticmethod
+    def __translate_condition(
+            ha_condition: Union[HomeAssistantWeatherCondition, None]) -> Union[KodiConditionCode, None]:
+        if ha_condition is None:
+            return None
+        elif ha_condition == HomeAssistantWeatherCondition.CLEAR_NIGHT:
+            return KodiConditionCode.CLEAR_NIGHT
+        elif ha_condition == HomeAssistantWeatherCondition.CLOUDY:
+            return KodiConditionCode.CLOUDY
+        elif ha_condition == HomeAssistantWeatherCondition.FOG:
+            return KodiConditionCode.FOGGY
+        elif ha_condition == HomeAssistantWeatherCondition.HAIL:
+            return KodiConditionCode.HAIL
+        elif ha_condition == HomeAssistantWeatherCondition.LIGHTNING:
+            return KodiConditionCode.THUNDERSTORMS
+        elif ha_condition == HomeAssistantWeatherCondition.LIGHTNING_RAINY:
+            return KodiConditionCode.THUNDERSHOWERS
+        elif ha_condition == HomeAssistantWeatherCondition.PARTLY_CLOUDY:
+            return KodiConditionCode.PARTLY_CLOUDY
+        elif ha_condition == HomeAssistantWeatherCondition.POURING:
+            return KodiConditionCode.SHOWERS_2
+        elif ha_condition == HomeAssistantWeatherCondition.RAINY:
+            return KodiConditionCode.SHOWERS
+        elif ha_condition == HomeAssistantWeatherCondition.SNOWY:
+            return KodiConditionCode.SNOW
+        elif ha_condition == HomeAssistantWeatherCondition.SNOWY_RAINY:
+            return KodiConditionCode.MIXED_RAIN_AND_SNOW
+        elif ha_condition == HomeAssistantWeatherCondition.SUNNY:
+            return KodiConditionCode.SUNNY
+        elif ha_condition == HomeAssistantWeatherCondition.WINDY:
+            return KodiConditionCode.WINDY
+        elif ha_condition == HomeAssistantWeatherCondition.WINDY_CLOUDY:
+            return KodiConditionCode.WINDY
+        elif ha_condition == HomeAssistantWeatherCondition.EXCEPTIONAL:
+            return KodiConditionCode.SEVERE_THUNDERSTORMS
         else:
-            log('Response (weather current) from server is NONE!')
-            show_dialog('Response (weather current) from server is NONE!')
+            raise ValueError(f"Unknown condition: {ha_condition}")
+
+    def apply_forecast(self):
+        forecast = self._get_forecast_handling_errors()
+        if forecast is None:
+            self._kodi_adapter.log(message="No forecasts were found.", level=KodiLogLevel.WARNING)
             self._kodi_adapter.clear_weather_properties()
             return
-        # Daily
-        response = self.get_request(ha_weather_daily_url)
-        if response is not None:
-            log('Response (weather hourly) from server: ' + str(response.content))
-            try:
-                parsed_response = json.loads(response.text)
-            except json.decoder.JSONDecodeError:
-                show_dialog(__addon__.getLocalizedString(30014))
-                self._kodi_adapter.clear_weather_properties()
-                raise Exception(
-                    'Got incorrect response from Home Assistant Weather server (request was to ' + ha_weather_daily_url + ' with data: ' + ha_weather_hourly_url_data + ') and response received: ' + response.text)
-            if parsed_response.get('attributes') is not None:
-                forecast = parsed_response['attributes']
-                for i in range(0, forecast['days_num']):
-                    count = str(i)
-                    set_property('Day' + count + '.Title',
-                                 convert_datetime(forecast['day' + count + '_date'], 'datetime', 'weekday', 'long'),
-                                 WND)
-                    set_property('Day' + count + '.FanartCode',
-                                 get_condition_code_by_name(forecast['day' + count + '_condition']), WND)
-                    set_property('Day' + count + '.Outlook',
-                                 str(fix_condition_translation_codes(forecast['day' + count + '_condition'])), WND)
-                    set_property('Day' + count + '.OutlookIcon',
-                                 '%s.png' % str(get_condition_code_by_name(forecast['day' + count + '_condition'])),
-                                 WND)
-                    set_property('Day' + count + '.HighTemp',
-                                 str(convert_temp(forecast['day' + count + '_temperature'], temperature_unit, 'C')),
-                                 WND)
-                    set_property('Day' + count + '.LowTemp',
-                                 str(convert_temp(forecast['day' + count + '_temperature_low'], temperature_unit, 'C')),
-                                 WND)
-                    set_property('Daily.' + str(i + 1) + '.ShortDay',
-                                 convert_datetime(forecast['day' + count + '_date'], 'datetime', 'weekday', 'short'),
-                                 WND)
-                    set_property('Daily.' + str(i + 1) + '.LongDay',
-                                 convert_datetime(forecast['day' + count + '_date'], 'datetime', 'weekday', 'long'),
-                                 WND)
-                    set_property('Daily.' + str(i + 1) + '.ShortDate',
-                                 convert_datetime(forecast['day' + count + '_date'], 'datetime', 'monthday', 'short'),
-                                 WND)
-                    set_property('Daily.' + str(i + 1) + '.LongDate',
-                                 convert_datetime(forecast['day' + count + '_date'], 'datetime', 'monthday', 'long'),
-                                 WND)
-                    set_property('Daily.' + str(i + 1) + '.HighTemperature',
-                                 str(forecast['day' + count + '_temperature']) + TEMPUNIT, WND)
-                    set_property('Daily.' + str(i + 1) + '.LowTemperature',
-                                 str(forecast['day' + count + '_temperature_low']) + TEMPUNIT, WND)
-                    set_property('Daily.' + str(i + 1) + '.Humidity', str(forecast['day' + count + '_humidity']) + '%',
-                                 WND)
-                    set_property('Daily.' + str(i + 1) + '.Precipitation',
-                                 str(forecast['day' + count + '_precipitation']) + precipitation_unit, WND)
-                    set_property('Daily.' + str(i + 1) + '.WindDirection',
-                                 str(xbmc.getLocalizedString(wind_dir(forecast['day' + count + '_wind_bearing']))), WND)
-                    set_property('Daily.' + str(i + 1) + '.WindSpeed',
-                                 str(forecast['day' + count + '_wind_speed']) + SPEEDUNIT, WND)
-                    set_property('Daily.' + str(i + 1) + '.WindDegree',
-                                 str(forecast['day' + count + '_wind_bearing']) + u'°', WND)
-                    set_property('Daily.' + str(i + 1) + '.DewPoint', convert_temp(
-                        dewpoint(int(convert_temp(forecast['day' + count + '_temperature'], temperature_unit, 'C')),
-                                 int(forecast['day' + count + '_humidity'])), 'C', None), WND)
-                    set_property('Daily.' + str(i + 1) + '.Outlook',
-                                 str(fix_condition_translation_codes(forecast['day' + count + '_condition'])), WND)
-                    set_property('Daily.' + str(i + 1) + '.OutlookIcon',
-                                 '%s.png' % str(get_condition_code_by_name(forecast['day' + count + '_condition'])),
-                                 WND)
-                    set_property('Daily.' + str(i + 1) + '.FanartCode',
-                                 get_condition_code_by_name(forecast['day' + count + '_condition']), WND)
-                set_property('Daily.IsFetched', 'true', WND)
-            else:
-                log('The response dict from get_forecast url does not contain forecast key. This is unexpected.')
-                show_dialog(__addon__.getLocalizedString(30014))
-                self._kodi_adapter.clear_weather_properties()
-                return
-        else:
-            log('Response (weather daily) from server is NONE!')
-            show_dialog('Response (weather daily) from server is NONE')
-            self._kodi_adapter.clear_weather_properties()
-            return
-        # Hourly weather
-        response = self.get_request(ha_weather_hourly_url)
-        if response is not None:
-            log('Response (weather daily) from server: ' + str(response.content))
-            try:
-                parsed_response = json.loads(response.text)
-            except json.decoder.JSONDecodeError:
-                show_dialog(__addon__.getLocalizedString(30014))
-                self._kodi_adapter.clear_weather_properties()
-                raise Exception(
-                    'Got incorrect response from Home Assistant Weather server (request was to ' + ha_weather_daily_url + ' with data: ' + ha_weather_daily_url_data + ') and response received: ' + response.text)
-            if parsed_response.get('attributes') is not None:
-                forecast = parsed_response['attributes']
-                for i in range(0, forecast['hours_num']):
-                    count = str(i)
-                    set_property('Hourly.' + str(i + 1) + '.Time',
-                                 convert_datetime(forecast['hour' + count + '_date'], 'datetime', 'time', None), WND)
-                    set_property('Hourly.' + str(i + 1) + '.ShortDate',
-                                 convert_datetime(forecast['hour' + count + '_date'], 'datetime', 'monthday', 'short'),
-                                 WND)
-                    set_property('Hourly.' + str(i + 1) + '.LongDate',
-                                 convert_datetime(forecast['hour' + count + '_date'], 'datetime', 'monthday', 'long'),
-                                 WND)
-                    set_property('Hourly.' + str(i + 1) + '.Temperature',
-                                 str(forecast['hour' + count + '_temperature']) + TEMPUNIT, WND)
-                    set_property('Hourly.' + str(i + 1) + '.Humidity',
-                                 str(forecast['hour' + count + '_humidity']) + '%', WND)
-                    set_property('Hourly.' + str(i + 1) + '.Precipitation',
-                                 str(forecast['hour' + count + '_precipitation']) + precipitation_unit, WND)
-                    set_property('Hourly.' + str(i + 1) + '.WindDirection',
-                                 str(xbmc.getLocalizedString(wind_dir(forecast['hour' + count + '_wind_bearing']))),
-                                 WND)
-                    set_property('Hourly.' + str(i + 1) + '.WindSpeed',
-                                 str(forecast['hour' + count + '_wind_speed']) + SPEEDUNIT, WND)
-                    set_property('Hourly.' + str(i + 1) + '.WindDegree',
-                                 str(forecast['hour' + count + '_wind_bearing']) + u'°', WND)
-                    set_property('Hourly.' + str(i + 1) + '.DewPoint', convert_temp(
-                        dewpoint(convert_temp(forecast['hour' + count + '_temperature'], temperature_unit, 'C'),
-                                 forecast['hour' + count + '_humidity']), 'C', None), WND)
-                    set_property('Hourly.' + str(i + 1) + '.Outlook',
-                                 str(fix_condition_translation_codes(forecast['hour' + count + '_condition'])), WND)
-                    set_property('Hourly.' + str(i + 1) + '.OutlookIcon',
-                                 '%s.png' % str(get_condition_code_by_name(forecast['hour' + count + '_condition'])),
-                                 WND)
-                    set_property('Hourly.' + str(i + 1) + '.FanartCode',
-                                 get_condition_code_by_name(forecast['hour' + count + '_condition']), WND)
-                set_property('Hourly.IsFetched', 'true', WND)
-            else:
-                log('The response dict from get_forecast url does not contain forecast key. This is unexpected.')
-                show_dialog(__addon__.getLocalizedString(30014))
-                self._kodi_adapter.clear_weather_properties()
-                return
-        else:
-            log('Response (weather daily) from server is NONE!')
-            show_dialog('Response (weather daily) from server is NONE')
-            self._kodi_adapter.clear_weather_properties()
-            return
+        kodi_forecast = KodiHomeAssistantWeatherPlugin.__translate_ha_forecast_to_kodi_forecast(
+            ha_forecast=forecast
+        )
+        self._kodi_adapter.set_weather_properties(forecast=kodi_forecast)

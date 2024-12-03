@@ -13,6 +13,17 @@ class _NestedProperties:
         return [self.x for x in dir(self) if x.isupper()]
 
 
+class _KodiGeneralWeatherProperties(_NestedProperties):
+    LOCATION = "Location"
+    CURRENT_LOCATION = "Current.Location"
+    WEATHER_PROVIDER = "WeatherProvider"
+    WEATHER_PROVIDER_LOGO = "WeatherProviderLogo"
+    WEATHER_IS_FETCHED = "Weather.IsFetched"
+    CURRENT_IS_FETCHED = "Current.IsFetched"
+    HOURLY_IS_FETCHED = "Hourly.IsFetched"
+    DAILY_IS_FETCHED = "Daily.IsFetched"
+
+
 class _KodiCurrentWeatherProperties(_NestedProperties):
     CONDITION = "Condition"
     TEMPERATURE = "Temperature"
@@ -68,6 +79,7 @@ class _KodiDailyWeatherPropertiesCompat(_NestedProperties):
 
 
 class _KodiWeatherProperties:
+    GENERAL = _KodiGeneralWeatherProperties("")
     CURRENT = _KodiCurrentWeatherProperties("Current.")
 
     HOURLY_1 = _KodiHourlyWeatherProperties("Hourly.1.")
@@ -101,6 +113,7 @@ class _KodiWeatherProperties:
     DAILY_4 = _KodiDailyWeatherProperties("Daily.4.")
     DAILY_5 = _KodiDailyWeatherProperties("Daily.5.")
     DAILY_6 = _KodiDailyWeatherProperties("Daily.6.")
+    DAILY_7 = _KodiDailyWeatherProperties("Daily.7.")
 
     DAY0 = _KodiDailyWeatherPropertiesCompat("Day0.")
     DAY1 = _KodiDailyWeatherPropertiesCompat("Day1.")
@@ -108,3 +121,4 @@ class _KodiWeatherProperties:
     DAY3 = _KodiDailyWeatherPropertiesCompat("Day3.")
     DAY4 = _KodiDailyWeatherPropertiesCompat("Day4.")
     DAY5 = _KodiDailyWeatherPropertiesCompat("Day5.")
+    DAY6 = _KodiDailyWeatherPropertiesCompat("Day6.")

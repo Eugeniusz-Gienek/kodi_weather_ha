@@ -300,3 +300,7 @@ msgstr ""
 msgctxt "#30147"
 msgid "isolated-thundershowers"
 msgstr ""
+
+msgctxt "#30200"
+msgid "Home Assistant Weather"
+msgstr ""

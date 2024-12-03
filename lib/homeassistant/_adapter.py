@@ -5,8 +5,8 @@ import requests
 from requests import RequestException
 
 from ._errors import RequestError
-from ._forecast import (HomeAssistantForecast, _HomeAssistantCurrentForecast, _HomeAssistantHourlyForecast,
-                        _HomeAssistantDailyForecast)
+from ._forecast import (HomeAssistantForecast, HomeAssistantCurrentForecast, HomeAssistantHourlyForecast,
+                        HomeAssistantDailyForecast)
 
 
 class HomeAssistantAdapter:
@@ -45,13 +45,13 @@ class HomeAssistantAdapter:
             url=forecast_url, token=token, post=True, data={"entity_id": entity_id, "type": "daily"}
         )
         return HomeAssistantForecast(
-            current=_HomeAssistantCurrentForecast(**current.json()["attributes"]),
+            current=HomeAssistantCurrentForecast(**current.json()["attributes"]),
             hourly=[
-                _HomeAssistantHourlyForecast(**hourly_forecast)
+                HomeAssistantHourlyForecast(**hourly_forecast)
                 for hourly_forecast in hourly.json()["service_response"][entity_id]["forecast"]
             ],
             daily=[
-                _HomeAssistantDailyForecast(**daily_forecast)
+                HomeAssistantDailyForecast(**daily_forecast)
                 for daily_forecast in daily.json()["service_response"][entity_id]["forecast"]
             ],
         )

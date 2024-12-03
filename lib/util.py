@@ -113,44 +113,7 @@ def get_condition_code_by_name(name, is_num=False):
     return str(code)
 
 
-# Source: https://github.com/xbmc/repo-scripts/blob/krypton/weather.yahoo/default.py
-# convert winddirection in degrees to a string (eg. NNW).
-# https://raw.githubusercontent.com/xbmc/xbmc/master/addons/resource.language.en_gb/resources/strings.po
-def wind_dir(deg):
-    deg = int(deg)
-    if deg >= 349 or deg <= 11:
-        return 71
-    elif 12 <= deg <= 33:
-        return 72
-    elif 34 <= deg <= 56:
-        return 73
-    elif 57 <= deg <= 78:
-        return 74
-    elif 79 <= deg <= 101:
-        return 75
-    elif 102 <= deg <= 123:
-        return 76
-    elif 124 <= deg <= 146:
-        return 77
-    elif 147 <= deg <= 168:
-        return 78
-    elif 169 <= deg <= 191:
-        return 79
-    elif 192 <= deg <= 213:
-        return 80
-    elif 214 <= deg <= 236:
-        return 81
-    elif 237 <= deg <= 258:
-        return 82
-    elif 259 <= deg <= 281:
-        return 83
-    elif 282 <= deg <= 303:
-        return 84
-    elif 304 <= deg <= 326:
-        return 85
-    elif 327 <= deg <= 348:
-        return 86
-    return 92
+
 
 
 # convert month numbers to short names (01 = jan)
@@ -387,35 +350,6 @@ def windchill(temp, speed):
     else:
         return temp
 
-
-# calculate dewpoint celcius from temperature in celcius and humidity
-def dewpoint(Tc=0, RH=93, minRH=(0, 0.075)[0]):
-    """ Dewpoint from relative humidity and temperature
-        If you know the relative humidity and the air temperature,
-        and want to calculate the dewpoint, the formulas are as follows.
-        
-        getDewPoint(tCelsius, humidity)
-    """
-    Tc = int(Tc)
-    RH = int(RH)
-    # First, if your air temperature is in degrees Fahrenheit, then you must convert it to degrees Celsius by using the Fahrenheit to Celsius formula.
-    # Tc = 5.0 / 9.0 * (Tf - 32.0)
-    # The next step is to obtain the saturation vapor pressure(Es) using this formula as before when air temperature is known.
-    Es = 6.11 * 10.0 ** (7.5 * Tc / (237.7 + Tc))
-    # The next step is to use the saturation vapor pressure and the relative humidity to compute the actual vapor pressure(E) of the air. This can be done with the following formula.
-    # RH=relative humidity of air expressed as a percent. or except minimum(.075) humidity to abort error with math.log.
-    RH = RH or minRH  # 0.075
-    E = (RH * Es) / 100
-    # Note: math.log() means to take the natural log of the variable in the parentheses
-    # Now you are ready to use the following formula to obtain the dewpoint temperature.
-    try:
-        DewPoint = (-430.22 + 237.7 * math.log(E)) / (-math.log(E) + 19.08)
-    except ValueError:
-        # math domain error, because RH = 0%
-        # return "N/A"
-        DewPoint = 0  # minRH
-    # Note: Due to the rounding of decimal places, your answer may be slightly different from the above answer, but it should be within two degrees.
-    return str(int(round(DewPoint)))
 
 
 # Source: https://community.openhab.org/t/apparent-temperature/104066/7
