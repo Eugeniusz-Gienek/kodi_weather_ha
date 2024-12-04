@@ -31,6 +31,9 @@ class KodiHomeAssistantWeatherPluginAdapter:
     def wind_speed_unit(self):
         return xbmc.getRegion(id=_KodiMagicValues.REGION_WIND_SPEED_UNIT_ID)
 
+    def _get_localized_string(self, id: int):
+        return self._kodi_addon.getLocalizedString(id=id) or xbmc.getLocalizedString(id=id)
+
     def _get_setting(self, setting: _HomeAssistantWeatherPluginSetting) -> _Setting_Type:
         if setting.setting_type == bool:
             return self._kodi_addon.getSettingBool(id=setting.setting_id)
@@ -67,7 +70,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
     def dialog(self, message_id: KodiAddonStrings) -> bool:
         return xbmcgui.Dialog().ok(
             heading=self._kodi_addon.getAddonInfo(id=_KodiMagicValues.ADDON_INFO_NAME_ID),
-            message=self._kodi_addon.getLocalizedString(id=message_id)
+            message=self._get_localized_string(id=message_id)
         )
     
     def _set_window_property(self, key: str, value: str) -> None:
@@ -140,7 +143,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.WIND_DIRECTION,
-            value=self._kodi_addon.getLocalizedString(id=forecast.Current.wind_direction.value)
+            value=self._get_localized_string(id=forecast.Current.wind_direction.value)
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.HUMIDITY,
@@ -236,7 +239,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=hourly_properties.WIND_DIRECTION,
-                value=self._kodi_addon.getLocalizedString(id=hourly_forecast.wind_direction.value)
+                value=self._get_localized_string(id=hourly_forecast.wind_direction.value)
             )
             self._set_window_property(
                 key=hourly_properties.HUMIDITY,
@@ -294,7 +297,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=daily_properties.SHORT_DAY,
-                value=self._kodi_addon.getLocalizedString(id=daily_forecast.timestamp.isoweekday() + 40)
+                value=self._get_localized_string(id=daily_forecast.timestamp.isoweekday() + 40)
             )
             self._set_window_property(
                 key=daily_properties.HIGH_TEMPERATURE,
@@ -318,7 +321,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=daily_properties.WIND_DIRECTION,
-                value=self._kodi_addon.getLocalizedString(id=daily_forecast.wind_direction.value)
+                value=self._get_localized_string(id=daily_forecast.wind_direction.value)
             )
             self._set_window_property(
                 key=daily_properties.PRECIPITATION,
@@ -326,7 +329,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=daily_properties_compat.TITLE,
-                value=self._kodi_addon.getLocalizedString(id=daily_forecast.timestamp.isoweekday() + 10)
+                value=self._get_localized_string(id=daily_forecast.timestamp.isoweekday() + 10)
             )
             self._set_window_property(
                 key=daily_properties_compat.HIGH_TEMP,
