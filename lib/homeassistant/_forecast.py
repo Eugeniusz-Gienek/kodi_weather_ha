@@ -1,8 +1,9 @@
 from dataclasses import dataclass
+from enum import Enum
 from typing import List, Union
 
 
-class HomeAssistantWeatherCondition:
+class HomeAssistantWeatherCondition(str, Enum):
     CLEAR_NIGHT = "clear-night"
     CLOUDY = "cloudy"
     FOG = "fog"

@@ -17,8 +17,8 @@ RETRY_DELAY_S = 10
 
 
 class KodiHomeAssistantWeatherPlugin:
-    def __init__(self, kodi_adapter: KodiHomeAssistantWeatherPluginAdapter):
-        self._kodi_adapter = kodi_adapter
+    def __init__(self):
+        self._kodi_adapter = KodiHomeAssistantWeatherPluginAdapter()
         self._kodi_adapter.log("Home Assistant Weather started.")
 
         if not self._kodi_adapter.required_settings_done:
@@ -68,7 +68,7 @@ class KodiHomeAssistantWeatherPlugin:
                 ha_condition=ha_forecast.condition
             ),
             timestamp=datetime.fromisoformat(ha_forecast.datetime),
-            pressure=None,
+            pressure="",        # TODO: NoneType handling
         )
 
     @staticmethod
@@ -96,7 +96,7 @@ class KodiHomeAssistantWeatherPlugin:
                 temperature=ha_forecast.current.temperature,  # TODO: Ensure °C
                 wind_speed=ha_forecast.current.wind_speed,  # TODO: Ensure kph
                 wind_direction=KodiWindDirectionCode.from_bearing(bearing=ha_forecast.current.wind_bearing),
-                precipitation=None,
+                precipitation=0,   # TODO: NoneType handling
                 condition=KodiHomeAssistantWeatherPlugin.__translate_condition(
                     ha_condition=ha_forecast.hourly[0].condition if len(ha_forecast.hourly) > 0 else None,
                 ),
@@ -153,35 +153,35 @@ class KodiHomeAssistantWeatherPlugin:
             ha_condition: Union[HomeAssistantWeatherCondition, None]) -> Union[KodiConditionCode, None]:
         if ha_condition is None:
             return None
-        elif ha_condition == HomeAssistantWeatherCondition.CLEAR_NIGHT:
+        elif ha_condition == HomeAssistantWeatherCondition.CLEAR_NIGHT.value:
             return KodiConditionCode.CLEAR_NIGHT
-        elif ha_condition == HomeAssistantWeatherCondition.CLOUDY:
+        elif ha_condition == HomeAssistantWeatherCondition.CLOUDY.value:
             return KodiConditionCode.CLOUDY
-        elif ha_condition == HomeAssistantWeatherCondition.FOG:
+        elif ha_condition == HomeAssistantWeatherCondition.FOG.value:
             return KodiConditionCode.FOGGY
-        elif ha_condition == HomeAssistantWeatherCondition.HAIL:
+        elif ha_condition == HomeAssistantWeatherCondition.HAIL.value:
             return KodiConditionCode.HAIL
-        elif ha_condition == HomeAssistantWeatherCondition.LIGHTNING:
+        elif ha_condition == HomeAssistantWeatherCondition.LIGHTNING.value:
             return KodiConditionCode.THUNDERSTORMS
-        elif ha_condition == HomeAssistantWeatherCondition.LIGHTNING_RAINY:
+        elif ha_condition == HomeAssistantWeatherCondition.LIGHTNING_RAINY.value:
             return KodiConditionCode.THUNDERSHOWERS
-        elif ha_condition == HomeAssistantWeatherCondition.PARTLY_CLOUDY:
+        elif ha_condition == HomeAssistantWeatherCondition.PARTLY_CLOUDY.value:
             return KodiConditionCode.PARTLY_CLOUDY
-        elif ha_condition == HomeAssistantWeatherCondition.POURING:
+        elif ha_condition == HomeAssistantWeatherCondition.POURING.value:
             return KodiConditionCode.SHOWERS_2
-        elif ha_condition == HomeAssistantWeatherCondition.RAINY:
+        elif ha_condition == HomeAssistantWeatherCondition.RAINY.value:
             return KodiConditionCode.SHOWERS
-        elif ha_condition == HomeAssistantWeatherCondition.SNOWY:
+        elif ha_condition == HomeAssistantWeatherCondition.SNOWY.value:
             return KodiConditionCode.SNOW
-        elif ha_condition == HomeAssistantWeatherCondition.SNOWY_RAINY:
+        elif ha_condition == HomeAssistantWeatherCondition.SNOWY_RAINY.value:
             return KodiConditionCode.MIXED_RAIN_AND_SNOW
-        elif ha_condition == HomeAssistantWeatherCondition.SUNNY:
+        elif ha_condition == HomeAssistantWeatherCondition.SUNNY.value:
             return KodiConditionCode.SUNNY
-        elif ha_condition == HomeAssistantWeatherCondition.WINDY:
+        elif ha_condition == HomeAssistantWeatherCondition.WINDY.value:
             return KodiConditionCode.WINDY
-        elif ha_condition == HomeAssistantWeatherCondition.WINDY_CLOUDY:
+        elif ha_condition == HomeAssistantWeatherCondition.WINDY_CLOUDY.value:
             return KodiConditionCode.WINDY
-        elif ha_condition == HomeAssistantWeatherCondition.EXCEPTIONAL:
+        elif ha_condition == HomeAssistantWeatherCondition.EXCEPTIONAL.value:
             return KodiConditionCode.SEVERE_THUNDERSTORMS
         else:
             raise ValueError(f"Unknown condition: {ha_condition}")
@@ -196,3 +196,4 @@ class KodiHomeAssistantWeatherPlugin:
             ha_forecast=forecast
         )
         self._kodi_adapter.set_weather_properties(forecast=kodi_forecast)
+        self._kodi_adapter.log(message="Weather updated successfully.", level=KodiLogLevel.INFO)

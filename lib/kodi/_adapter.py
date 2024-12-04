@@ -69,6 +69,13 @@ class KodiHomeAssistantWeatherPluginAdapter:
             heading=self._kodi_addon.getAddonInfo(id=_KodiMagicValues.ADDON_INFO_NAME_ID),
             message=self._kodi_addon.getLocalizedString(id=message_id)
         )
+    
+    def _set_window_property(self, key: str, value: str) -> None:
+        self._window.setProperty(
+            key=key,
+            value=value
+        )
+        self.log(message=f"{key} := {value}", level=KodiLogLevel.DEBUG)
 
     def clear_weather_properties(self) -> None:
         for key in (
@@ -113,91 +120,57 @@ class KodiHomeAssistantWeatherPluginAdapter:
                 *_KodiWeatherProperties.DAY5.values,
                 *_KodiWeatherProperties.DAY6.values,
         ):
-            self._window.setProperty(key=key, value="")
+            self._set_window_property(key=key, value="")
 
     def set_weather_properties(self, forecast: KodiForecastData) -> None:
         whole_number = "{:.0f}".format
         true = "true"
-        # general
-        # TODO: Override location from settings
-        self._window.setProperty(
-            key=_KodiWeatherProperties.GENERAL.LOCATION,
-            value=forecast.General.location
-        )
-        self._window.setProperty(
-            key=_KodiWeatherProperties.GENERAL.CURRENT_LOCATION,
-            value=forecast.General.location
-        )
-        self._window.setProperty(
-            key=_KodiWeatherProperties.GENERAL.WEATHER_PROVIDER,
-            value=self._kodi_addon.getLocalizedString(id=KodiAddonStrings.ADDON_SHORT_NAME)
-        )
-        self._window.setProperty(
-            key=_KodiWeatherProperties.GENERAL.WEATHER_PROVIDER_LOGO,
-            value=xbmcvfs.translatePath(os.path.join(self.cwd, "resources", "banner.jpg"))
-        )
-        self._window.setProperty(
-            key=_KodiWeatherProperties.GENERAL.WEATHER_IS_FETCHED,
-            value=true
-        )
-        self._window.setProperty(
-            key=_KodiWeatherProperties.GENERAL.CURRENT_IS_FETCHED,
-            value=true
-        )
-        self._window.setProperty(
-            key=_KodiWeatherProperties.GENERAL.HOURLY_IS_FETCHED,
-            value=true
-        )
-        self._window.setProperty(
-            key=_KodiWeatherProperties.GENERAL.DAILY_IS_FETCHED,
-            value=true
-        )
         # current
-        self._window.setProperty(
+        self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.CONDITION,
             value=forecast.Current.condition_str
         )
-        self._window.setProperty(
+        self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.TEMPERATURE,
             value=whole_number(forecast.Current.temperature)
         )
-        self._window.setProperty(
+        self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.WIND,
             value=whole_number(forecast.Current.wind_speed)
         )
-        self._window.setProperty(
+        self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.WIND_DIRECTION,
             value=self._kodi_addon.getLocalizedString(id=forecast.Current.wind_direction.value)
         )
-        self._window.setProperty(
+        self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.HUMIDITY,
             value=whole_number(forecast.Current.humidity)
         )
-        self._window.setProperty(
+        self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.FEELS_LIKE,
             value=whole_number(forecast.Current.feels_like)
         )
-        self._window.setProperty(
+        self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.UV_INDEX,
             value=whole_number(forecast.Current.uv_index)
         )
-        self._window.setProperty(
+        self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.DEW_POINT,
             value=whole_number(forecast.Current.dew_point)
         )
-        self._window.setProperty(
+        self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.PRECIPITATION,
             value=whole_number(forecast.Current.precipitation)
         )
-        self._window.setProperty(
+        self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.CLOUDINESS,
             value=whole_number(forecast.Current.cloudiness)
         )
-        self._window.setProperty(
+        self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.OUTLOOK_ICON,
             value=forecast.Current.outlook_icon
         )
-        self._window.setProperty(
+        self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.FANART_CODE,
             value=whole_number(forecast.Current.fanart_code)
         )
@@ -233,59 +206,59 @@ class KodiHomeAssistantWeatherPluginAdapter:
         ):
             hourly_forecast: KodiHourlyForecastData
             hourly_properties: _KodiHourlyWeatherProperties
-            self._window.setProperty(
+            self._set_window_property(
                 key=hourly_properties.TIME,
                 value=hourly_forecast.timestamp.strftime("%H:%M")
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=hourly_properties.LONG_DATE,
                 value=hourly_forecast.timestamp.strftime("%Y-%m-%d")
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=hourly_properties.SHORT_DATE,
                 value=hourly_forecast.timestamp.strftime("%Y-%m-%d")
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=hourly_properties.OUTLOOK,
                 value=hourly_forecast.condition_str
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=hourly_properties.OUTLOOK_ICON,
                 value=hourly_forecast.outlook_icon
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=hourly_properties.FANART_CODE,
                 value=whole_number(hourly_forecast.fanart_code)
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=hourly_properties.WIND_SPEED,
                 value=whole_number(hourly_forecast.wind_speed)
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=hourly_properties.WIND_DIRECTION,
                 value=self._kodi_addon.getLocalizedString(id=hourly_forecast.wind_direction.value)
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=hourly_properties.HUMIDITY,
                 value=whole_number(hourly_forecast.humidity)
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=hourly_properties.TEMPERATURE,
                 value=whole_number(hourly_forecast.temperature)
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=hourly_properties.DEW_POINT,
                 value=whole_number(hourly_forecast.dew_point)
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=hourly_properties.FEELS_LIKE,
                 value=whole_number(hourly_forecast.feels_like)
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=hourly_properties.PRESSURE,
                 value=hourly_forecast.pressure
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=hourly_properties.PRECIPITATION,
                 value=whole_number(hourly_forecast.precipitation)
             )
@@ -315,67 +288,106 @@ class KodiHomeAssistantWeatherPluginAdapter:
             daily_forecast: KodiDailyForecastData
             daily_properties: _KodiDailyWeatherProperties
             daily_properties_compat: _KodiDailyWeatherPropertiesCompat
-            self._window.setProperty(
+            self._set_window_property(
                 key=daily_properties.SHORT_DATE,
                 value=daily_forecast.timestamp.strftime("%Y-%m-%d")
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=daily_properties.SHORT_DAY,
                 value=self._kodi_addon.getLocalizedString(id=daily_forecast.timestamp.isoweekday() + 40)
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=daily_properties.HIGH_TEMPERATURE,
                 value=whole_number(daily_forecast.temperature)
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=daily_properties.LOW_TEMPERATURE,
                 value=whole_number(daily_forecast.low_temperature)
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=daily_properties.OUTLOOK,
                 value=daily_forecast.condition_str
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=daily_properties.FANART_CODE,
                 value=whole_number(daily_forecast.fanart_code)
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=daily_properties.WIND_SPEED,
                 value=whole_number(daily_forecast.wind_speed)
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=daily_properties.WIND_DIRECTION,
                 value=self._kodi_addon.getLocalizedString(id=daily_forecast.wind_direction.value)
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=daily_properties.PRECIPITATION,
                 value=whole_number(daily_forecast.precipitation)
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=daily_properties_compat.TITLE,
                 value=self._kodi_addon.getLocalizedString(id=daily_forecast.timestamp.isoweekday() + 10)
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=daily_properties_compat.HIGH_TEMP,
                 value=whole_number(daily_forecast.temperature)
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=daily_properties_compat.LOW_TEMP,
                 value=whole_number(daily_forecast.low_temperature)
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=daily_properties_compat.OUTLOOK,
                 value=daily_forecast.condition_str
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=daily_properties_compat.OUTLOOK_ICON,
                 value=daily_forecast.outlook_icon
             )
-            self._window.setProperty(
+            self._set_window_property(
                 key=daily_properties_compat.FANART_CODE,
                 value=whole_number(daily_forecast.fanart_code)
             )
-
+        # general
+        # TODO: Override location from settings
+        self._set_window_property(
+            key=_KodiWeatherProperties.GENERAL.LOCATION,
+            value=forecast.General.location
+        )
+        self._set_window_property(
+            key=_KodiWeatherProperties.GENERAL.CURRENT_LOCATION,
+            value=forecast.General.location
+        )
+        self._set_window_property(
+            key=_KodiWeatherProperties.GENERAL.WEATHER_PROVIDER,
+            value=self._kodi_addon.getLocalizedString(id=KodiAddonStrings.ADDON_SHORT_NAME)
+        )
+        self._set_window_property(
+            key=_KodiWeatherProperties.GENERAL.WEATHER_PROVIDER_LOGO,
+            value=xbmcvfs.translatePath(os.path.join(self.cwd, "resources", "banner.jpg"))
+        )
+        self._set_window_property(
+            key=_KodiWeatherProperties.GENERAL.WEATHER_IS_FETCHED,
+            value=true
+        )
+        self._set_window_property(
+            key=_KodiWeatherProperties.GENERAL.CURRENT_IS_FETCHED,
+            value=true
+        )
+        self._set_window_property(
+            key=_KodiWeatherProperties.GENERAL.HOURLY_IS_FETCHED,
+            value=true
+        )
+        self._set_window_property(
+            key=_KodiWeatherProperties.GENERAL.DAILY_IS_FETCHED,
+            value=true
+        )
+        self._set_window_property(
+            key="Forecast.IsFetched",
+            value=true
+        )
+        self._set_window_property(key="Location1", value=forecast.General.location)
+        self._set_window_property(key="Locations", value="1")
 
 
 
