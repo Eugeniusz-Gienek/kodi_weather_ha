@@ -15,7 +15,7 @@ from ._values import _KodiMagicValues, KodiLogLevel, KodiAddonStrings
 class KodiHomeAssistantWeatherPluginAdapter:
 
     def __init__(self) -> None:
-        self._window = xbmcgui.Window(existingWindowId=_KodiMagicValues.WEATHER_WINDOW_ID)
+        self._window = xbmcgui.Window(_KodiMagicValues.WEATHER_WINDOW_ID)   # kwargs unsupported
         self._kodi_addon = xbmcaddon.Addon()
         self.__addon_id = self._kodi_addon.getAddonInfo(id=_KodiMagicValues.ADDON_INFO_ADDON_ID)
 
