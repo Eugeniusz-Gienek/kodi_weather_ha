@@ -1,4 +1,5 @@
 import os.path
+from datetime import datetime, UTC
 
 import xbmc
 import xbmcaddon
@@ -128,6 +129,8 @@ class KodiHomeAssistantWeatherPluginAdapter:
     def set_weather_properties(self, forecast: KodiForecastData) -> None:
         whole_number = "{:.0f}".format
         true = "true"
+        self._set_window_property(key="Location1", value=forecast.General.location)
+        self._set_window_property(key="Locations", value="1")
         # current
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.CONDITION,
@@ -136,6 +139,18 @@ class KodiHomeAssistantWeatherPluginAdapter:
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.TEMPERATURE,
             value=whole_number(forecast.Current.temperature)
+        )
+        self._set_window_property(
+            key=_KodiWeatherProperties.CURRENT.UV_INDEX,
+            value=whole_number(forecast.Current.uv_index)
+        )
+        self._set_window_property(
+            key=_KodiWeatherProperties.CURRENT.OUTLOOK_ICON,
+            value=forecast.Current.outlook_icon
+        )
+        self._set_window_property(
+            key=_KodiWeatherProperties.CURRENT.FANART_CODE,
+            value=whole_number(forecast.Current.fanart_code)
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.WIND,
@@ -150,16 +165,12 @@ class KodiHomeAssistantWeatherPluginAdapter:
             value=whole_number(forecast.Current.humidity)
         )
         self._set_window_property(
-            key=_KodiWeatherProperties.CURRENT.FEELS_LIKE,
-            value=whole_number(forecast.Current.feels_like)
-        )
-        self._set_window_property(
-            key=_KodiWeatherProperties.CURRENT.UV_INDEX,
-            value=whole_number(forecast.Current.uv_index)
-        )
-        self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.DEW_POINT,
             value=whole_number(forecast.Current.dew_point)
+        )
+        self._set_window_property(
+            key=_KodiWeatherProperties.CURRENT.FEELS_LIKE,
+            value=whole_number(forecast.Current.feels_like)
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.PRECIPITATION,
@@ -168,14 +179,6 @@ class KodiHomeAssistantWeatherPluginAdapter:
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.CLOUDINESS,
             value=whole_number(forecast.Current.cloudiness)
-        )
-        self._set_window_property(
-            key=_KodiWeatherProperties.CURRENT.OUTLOOK_ICON,
-            value=forecast.Current.outlook_icon
-        )
-        self._set_window_property(
-            key=_KodiWeatherProperties.CURRENT.FANART_CODE,
-            value=whole_number(forecast.Current.fanart_code)
         )
 
         # hourly
@@ -205,6 +208,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
                         _KodiWeatherProperties.HOURLY_21,
                         _KodiWeatherProperties.HOURLY_22,
                         _KodiWeatherProperties.HOURLY_23,
+                        _KodiWeatherProperties.HOURLY_24,
                 )
         ):
             hourly_forecast: KodiHourlyForecastData
@@ -362,8 +366,44 @@ class KodiHomeAssistantWeatherPluginAdapter:
             value=forecast.General.location
         )
         self._set_window_property(
+            key="ForecastLocation",
+            value=forecast.General.location
+        )
+        self._set_window_property(
+            key="RegionalLocation",
+            value=forecast.General.location
+        )
+        self._set_window_property(
+            key="Forecast.City",
+            value=forecast.General.location
+        )
+        self._set_window_property(
+            key="Forecast.Country",
+            value=forecast.General.location
+        )
+        self._set_window_property(
+            key="Forecast.Latitude",
+            value="0"
+        )
+        self._set_window_property(
+            key="Forecast.Longitude",
+            value="0"
+        )
+        self._set_window_property(
+            key="Forecast.IsFetched",
+            value=true
+        )
+        self._set_window_property(
+            key="Forecast.Updated",
+            value=datetime.now(tz=UTC).isoformat()
+        )
+        self._set_window_property(
+            key="Updated",
+            value=datetime.now(tz=UTC).isoformat()
+        )
+        self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.WEATHER_PROVIDER,
-            value=self._kodi_addon.getLocalizedString(id=KodiAddonStrings.ADDON_SHORT_NAME)
+            value=self._get_localized_string(id=KodiAddonStrings.ADDON_SHORT_NAME)
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.WEATHER_PROVIDER_LOGO,
@@ -385,12 +425,6 @@ class KodiHomeAssistantWeatherPluginAdapter:
             key=_KodiWeatherProperties.GENERAL.DAILY_IS_FETCHED,
             value=true
         )
-        self._set_window_property(
-            key="Forecast.IsFetched",
-            value=true
-        )
-        self._set_window_property(key="Location1", value=forecast.General.location)
-        self._set_window_property(key="Locations", value="1")
 
 
 
