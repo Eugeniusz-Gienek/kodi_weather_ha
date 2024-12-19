@@ -18,6 +18,8 @@ class _NestedProperties:
 
 class _KodiGeneralWeatherProperties(_NestedProperties):
     LOCATION = "Location"
+    LOCATION_1 = "Location1"
+    LOCATIONS = "Locations"
     CURRENT_LOCATION = "Current.Location"
     WEATHER_PROVIDER = "WeatherProvider"
     WEATHER_PROVIDER_LOGO = "WeatherProviderLogo"
@@ -25,6 +27,15 @@ class _KodiGeneralWeatherProperties(_NestedProperties):
     CURRENT_IS_FETCHED = "Current.IsFetched"
     HOURLY_IS_FETCHED = "Hourly.IsFetched"
     DAILY_IS_FETCHED = "Daily.IsFetched"
+    FORECAST_LOCATION = "ForcastLocation"
+    REGIONAL_LOCATION = "RegionalLocation"
+    FORECAST_CITY = "Forecast.City"
+    FORECAST_COUNTRY = "Forecast.Country"
+    FORECAST_LATITUDE = "Forecast.Latitude"
+    FORECAST_LONGITUDE = "Forecast.Longitude"
+    FORECAST_FETCHED = "Forecast.IsFetched"
+    FORECAST_UPDATED = "Forecast.Updated"
+    UPDATED = "Updated"
 
 
 class _KodiCurrentWeatherProperties(_NestedProperties):

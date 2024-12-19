@@ -89,8 +89,8 @@ class KodiHomeAssistantWeatherPluginAdapter:
     def set_weather_properties(self, forecast: KodiForecastData) -> None:
         whole_number = "{:.0f}".format
         true = "true"
-        self._set_window_property(key="Location1", value=forecast.General.location)
-        self._set_window_property(key="Locations", value="1")
+        self._set_window_property(key=_KodiWeatherProperties.GENERAL.LOCATION_1, value=forecast.General.location)
+        self._set_window_property(key=_KodiWeatherProperties.GENERAL.LOCATIONS, value="1")
         # current
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.CONDITION,
@@ -285,39 +285,39 @@ class KodiHomeAssistantWeatherPluginAdapter:
             value=forecast.General.location
         )
         self._set_window_property(
-            key="ForecastLocation",
+            key=_KodiWeatherProperties.GENERAL.FORECAST_LOCATION,
             value=forecast.General.location
         )
         self._set_window_property(
-            key="RegionalLocation",
+            key=_KodiWeatherProperties.GENERAL.REGIONAL_LOCATION,
             value=forecast.General.location
         )
         self._set_window_property(
-            key="Forecast.City",
+            key=_KodiWeatherProperties.GENERAL.FORECAST_CITY,
             value=forecast.General.location
         )
         self._set_window_property(
-            key="Forecast.Country",
+            key=_KodiWeatherProperties.GENERAL.FORECAST_COUNTRY,
             value=forecast.General.location
         )
         self._set_window_property(
-            key="Forecast.Latitude",
+            key=_KodiWeatherProperties.GENERAL.FORECAST_LATITUDE,
             value="0"
         )
         self._set_window_property(
-            key="Forecast.Longitude",
+            key=_KodiWeatherProperties.GENERAL.FORECAST_LONGITUDE,
             value="0"
         )
         self._set_window_property(
-            key="Forecast.IsFetched",
+            key=_KodiWeatherProperties.GENERAL.FORECAST_FETCHED,
             value=true
         )
         self._set_window_property(
-            key="Forecast.Updated",
+            key=_KodiWeatherProperties.GENERAL.FORECAST_UPDATED,
             value=datetime.now(tz=UTC).isoformat()
         )
         self._set_window_property(
-            key="Updated",
+            key=_KodiWeatherProperties.GENERAL.UPDATED,
             value=datetime.now(tz=UTC).isoformat()
         )
         self._set_window_property(
