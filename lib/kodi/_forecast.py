@@ -120,7 +120,7 @@ class _KodiForecastCommon:
     temperature: float                      # unit: °C
     wind_speed: float                       # unit: kph
     wind_direction: KodiWindDirectionCode   # eg: NNE
-    precipitation: int                      # unit: %
+    precipitation: str                      # with unit
 
 
 @dataclass
@@ -149,6 +149,7 @@ class _KodiConditionedForecastCommon:
 
 @dataclass
 class _KodiFutureForecastCommon:
+    temperature: str        # with unit
     timestamp: datetime
 
 
@@ -165,14 +166,14 @@ class KodiCurrentForecastData(_KodiForecastCommon, _KodiDetailedForecastCommon, 
 
 @dataclass
 class KodiHourlyForecastData(
-    _KodiForecastCommon, _KodiDetailedForecastCommon, _KodiConditionedForecastCommon, _KodiFutureForecastCommon
+    _KodiFutureForecastCommon, _KodiForecastCommon, _KodiDetailedForecastCommon, _KodiConditionedForecastCommon
 ):
     pressure: str       # with unit
 
 
 @dataclass
-class KodiDailyForecastData(_KodiForecastCommon, _KodiConditionedForecastCommon, _KodiFutureForecastCommon):
-    low_temperature: float  # unit: °C
+class KodiDailyForecastData(_KodiFutureForecastCommon, _KodiForecastCommon, _KodiConditionedForecastCommon):
+    low_temperature: str  # with unit
 
 
 @dataclass

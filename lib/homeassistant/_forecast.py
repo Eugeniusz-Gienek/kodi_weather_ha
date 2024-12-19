@@ -30,7 +30,7 @@ class _HomeAssistantForecastCommon:
 
 
 @dataclass
-class _HomeAssistantForecastMeta:
+class HomeAssistantForecastMeta:
     temperature_unit: str
     pressure_unit: str
     wind_speed_unit: str
@@ -52,7 +52,7 @@ class _HomeAssistantFutureForecast:
 
 
 @dataclass
-class HomeAssistantCurrentForecast(_HomeAssistantForecastCommon, _HomeAssistantForecastMeta):
+class HomeAssistantCurrentForecast(_HomeAssistantForecastCommon, HomeAssistantForecastMeta):
     dew_point: float
     cloud_coverage: float
     pressure: float

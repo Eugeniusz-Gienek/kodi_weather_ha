@@ -4,7 +4,7 @@ from typing import Union
 
 from lib.homeassistant import (
     HomeAssistantAdapter, RequestError, HomeAssistantForecast, HomeAssistantHourlyForecast, HomeAssistantDailyForecast,
-    HomeAssistantWeatherCondition
+    HomeAssistantWeatherCondition, HomeAssistantForecastMeta
 )
 from lib.kodi import (
     KodiHomeAssistantWeatherPluginAdapter, KodiAddonStrings, KodiLogLevel, KodiGeneralForecastData, KodiForecastData,
@@ -49,12 +49,15 @@ class KodiHomeAssistantWeatherPlugin:
 
     @staticmethod
     def __translate_hourly_ha_forecast_to_kodi_forecast(
-            ha_forecast: HomeAssistantHourlyForecast) -> KodiHourlyForecastData:
+            ha_forecast: HomeAssistantHourlyForecast, forecast_meta: HomeAssistantForecastMeta
+    ) -> KodiHourlyForecastData:
         return KodiHourlyForecastData(
-            temperature=ha_forecast.temperature,  # TODO: Ensure °C
+            temperature=KodiHomeAssistantWeatherPlugin.__format_temperature(temperature=ha_forecast.temperature, temperature_unit=forecast_meta.temperature_unit),
             wind_speed=ha_forecast.wind_speed,  # TODO: Ensure kph
             wind_direction=KodiWindDirectionCode.from_bearing(bearing=ha_forecast.wind_bearing),
-            precipitation=int(ha_forecast.precipitation),
+            precipitation=KodiHomeAssistantWeatherPlugin.__format_precipitation(
+                precipitation=ha_forecast.precipitation, precipitation_unit=forecast_meta.precipitation_unit
+            ),
             humidity=ha_forecast.humidity,
             feels_like=KodiHomeAssistantWeatherPlugin.__calculate_feels_like(
                 temperature_celsius=ha_forecast.temperature,
@@ -73,17 +76,19 @@ class KodiHomeAssistantWeatherPlugin:
 
     @staticmethod
     def __translate_daily_ha_forecast_to_kodi_forecast(
-            ha_forecast: HomeAssistantDailyForecast) -> KodiDailyForecastData:
+            ha_forecast: HomeAssistantDailyForecast, forecast_meta: HomeAssistantForecastMeta) -> KodiDailyForecastData:
         return KodiDailyForecastData(
-            temperature=ha_forecast.temperature,  # TODO: Ensure °C
+            temperature=KodiHomeAssistantWeatherPlugin.__format_temperature(temperature=ha_forecast.temperature, temperature_unit=forecast_meta.temperature_unit),
             wind_speed=ha_forecast.wind_speed,  # TODO: Ensure kph
             wind_direction=KodiWindDirectionCode.from_bearing(bearing=ha_forecast.wind_bearing),
-            precipitation=int(ha_forecast.precipitation),
+            precipitation=KodiHomeAssistantWeatherPlugin.__format_precipitation(
+                precipitation=ha_forecast.precipitation, precipitation_unit=forecast_meta.precipitation_unit
+            ),
             condition=KodiHomeAssistantWeatherPlugin.__translate_condition(
                 ha_condition=ha_forecast.condition
             ),
             timestamp=datetime.fromisoformat(ha_forecast.datetime),
-            low_temperature=ha_forecast.templow  # TODO: Ensure °C
+            low_temperature=KodiHomeAssistantWeatherPlugin.__format_temperature(temperature=ha_forecast.templow, temperature_unit=forecast_meta.temperature_unit)
         )
 
     @staticmethod
@@ -96,7 +101,10 @@ class KodiHomeAssistantWeatherPlugin:
                 temperature=ha_forecast.current.temperature,  # TODO: Ensure °C
                 wind_speed=ha_forecast.current.wind_speed,  # TODO: Ensure kph
                 wind_direction=KodiWindDirectionCode.from_bearing(bearing=ha_forecast.current.wind_bearing),
-                precipitation=0,   # TODO: NoneType handling
+                precipitation=KodiHomeAssistantWeatherPlugin.__format_precipitation(
+                    precipitation=ha_forecast.hourly[0].precipitation if len(ha_forecast.hourly) > 0 else None,
+                    precipitation_unit=ha_forecast.current.precipitation_unit
+                ),
                 condition=KodiHomeAssistantWeatherPlugin.__translate_condition(
                     ha_condition=ha_forecast.hourly[0].condition if len(ha_forecast.hourly) > 0 else None,
                 ),
@@ -114,13 +122,15 @@ class KodiHomeAssistantWeatherPlugin:
             ),
             HourlyForecasts=[
                 KodiHomeAssistantWeatherPlugin.__translate_hourly_ha_forecast_to_kodi_forecast(
-                    ha_forecast=hourly_forecast
+                    ha_forecast=hourly_forecast,
+                    forecast_meta=ha_forecast.current
                 )
                 for hourly_forecast in ha_forecast.hourly
             ],
             DailyForecasts=[
                 KodiHomeAssistantWeatherPlugin.__translate_daily_ha_forecast_to_kodi_forecast(
-                    ha_forecast=daily_forecast
+                    ha_forecast=daily_forecast,
+                    forecast_meta=ha_forecast.current
                 )
                 for daily_forecast in ha_forecast.daily
             ]
@@ -185,6 +195,21 @@ class KodiHomeAssistantWeatherPlugin:
             return KodiConditionCode.SEVERE_THUNDERSTORMS
         else:
             raise ValueError(f"Unknown condition: {ha_condition}")
+
+    @staticmethod
+    def __format_precipitation(precipitation: Union[float, None], precipitation_unit: str) -> Union[str, None]:
+        if precipitation is None:
+            return None
+        # scientific rounding to 0 or 1 significant decimal
+        if precipitation > 3:
+            fmt = "{:.0f} {}"
+        else:
+            fmt = "{:.1f} {}"
+        return fmt.format(precipitation, precipitation_unit)
+
+    @staticmethod
+    def __format_temperature(temperature: float, temperature_unit: str) -> str:
+        return "{:.0f} {}".format(temperature, temperature_unit)
 
     def apply_forecast(self):
         forecast = self._get_forecast_handling_errors()

@@ -134,7 +134,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.PRECIPITATION,
-            value=whole_number(forecast.Current.precipitation)
+            value=forecast.Current.precipitation
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.CLOUDINESS,
@@ -186,7 +186,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=hourly_properties.TEMPERATURE,
-                value=whole_number(hourly_forecast.temperature)
+                value=hourly_forecast.temperature
             )
             self._set_window_property(
                 key=hourly_properties.DEW_POINT,
@@ -202,7 +202,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=hourly_properties.PRECIPITATION,
-                value=whole_number(hourly_forecast.precipitation)
+                value=hourly_forecast.precipitation
             )
 
         # daily
@@ -224,11 +224,11 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=daily_properties.HIGH_TEMPERATURE,
-                value=whole_number(daily_forecast.temperature)
+                value=daily_forecast.temperature
             )
             self._set_window_property(
                 key=daily_properties.LOW_TEMPERATURE,
-                value=whole_number(daily_forecast.low_temperature)
+                value=daily_forecast.low_temperature
             )
             self._set_window_property(
                 key=daily_properties.OUTLOOK,
@@ -252,7 +252,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=daily_properties.PRECIPITATION,
-                value=whole_number(daily_forecast.precipitation)
+                value=daily_forecast.precipitation
             )
             self._set_window_property(
                 key=daily_properties_compat.TITLE,
@@ -260,11 +260,11 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=daily_properties_compat.HIGH_TEMP,
-                value=whole_number(daily_forecast.temperature)
+                value=daily_forecast.temperature
             )
             self._set_window_property(
                 key=daily_properties_compat.LOW_TEMP,
-                value=whole_number(daily_forecast.low_temperature)
+                value=daily_forecast.low_temperature
             )
             self._set_window_property(
                 key=daily_properties_compat.OUTLOOK,
