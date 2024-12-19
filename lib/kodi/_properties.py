@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Sequence
 
 
 class _NestedProperties:
@@ -6,11 +6,14 @@ class _NestedProperties:
         self._prefix = prefix
 
     def __getattribute__(self, item: str):
-        return object.__getattribute__(self, "_prefix") + object.__getattribute__(self, item)
+        attr = object.__getattribute__(self, item)
+        if isinstance(attr, str):
+            attr = object.__getattribute__(self, "_prefix") + attr
+        return attr
 
     @property
     def values(self) -> List[str]:
-        return [self.x for x in dir(self) if x.isupper()]
+        return [self.__getattribute__(x) for x in dir(self) if x.isupper()]
 
 
 class _KodiGeneralWeatherProperties(_NestedProperties):
@@ -122,3 +125,66 @@ class _KodiWeatherProperties:
     DAY4 = _KodiDailyWeatherPropertiesCompat("Day4.")
     DAY5 = _KodiDailyWeatherPropertiesCompat("Day5.")
     DAY6 = _KodiDailyWeatherPropertiesCompat("Day6.")
+
+    @classmethod
+    def hourlies(cls) -> Sequence[_KodiHourlyWeatherProperties]:
+        return (
+            cls.HOURLY_1,
+            cls.HOURLY_2,
+            cls.HOURLY_3,
+            cls.HOURLY_4,
+            cls.HOURLY_5,
+            cls.HOURLY_6,
+            cls.HOURLY_7,
+            cls.HOURLY_8,
+            cls.HOURLY_9,
+            cls.HOURLY_10,
+            cls.HOURLY_11,
+            cls.HOURLY_12,
+            cls.HOURLY_13,
+            cls.HOURLY_14,
+            cls.HOURLY_15,
+            cls.HOURLY_16,
+            cls.HOURLY_17,
+            cls.HOURLY_18,
+            cls.HOURLY_19,
+            cls.HOURLY_20,
+            cls.HOURLY_21,
+            cls.HOURLY_22,
+            cls.HOURLY_23,
+            cls.HOURLY_24,
+        )
+
+    @classmethod
+    def dailies(cls) -> Sequence[_KodiDailyWeatherProperties]:
+        return (
+            cls.DAILY_1,
+            cls.DAILY_2,
+            cls.DAILY_3,
+            cls.DAILY_4,
+            cls.DAILY_5,
+            cls.DAILY_6,
+            cls.DAILY_7,
+        )
+
+    @classmethod
+    def dailies_compat(cls) -> Sequence[_KodiDailyWeatherPropertiesCompat]:
+        return (
+            cls.DAY0,
+            cls.DAY1,
+            cls.DAY2,
+            cls.DAY3,
+            cls.DAY4,
+            cls.DAY5,
+            cls.DAY6,
+        )
+
+    @classmethod
+    def all(cls) -> Sequence[_NestedProperties]:
+        return (
+            _KodiWeatherProperties.GENERAL,
+            _KodiWeatherProperties.CURRENT,
+            *cls.hourlies(),
+            *cls.dailies(),
+            *cls.dailies_compat(),
+        )

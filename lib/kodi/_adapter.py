@@ -82,49 +82,9 @@ class KodiHomeAssistantWeatherPluginAdapter:
         self.log(message=f"{key} := {value}", level=KodiLogLevel.DEBUG)
 
     def clear_weather_properties(self) -> None:
-        for key in (
-                *_KodiWeatherProperties.GENERAL.values,
-                *_KodiWeatherProperties.CURRENT.values,
-                *_KodiWeatherProperties.HOURLY_1.values,
-                *_KodiWeatherProperties.HOURLY_2.values,
-                *_KodiWeatherProperties.HOURLY_3.values,
-                *_KodiWeatherProperties.HOURLY_4.values,
-                *_KodiWeatherProperties.HOURLY_5.values,
-                *_KodiWeatherProperties.HOURLY_6.values,
-                *_KodiWeatherProperties.HOURLY_7.values,
-                *_KodiWeatherProperties.HOURLY_8.values,
-                *_KodiWeatherProperties.HOURLY_9.values,
-                *_KodiWeatherProperties.HOURLY_10.values,
-                *_KodiWeatherProperties.HOURLY_11.values,
-                *_KodiWeatherProperties.HOURLY_12.values,
-                *_KodiWeatherProperties.HOURLY_13.values,
-                *_KodiWeatherProperties.HOURLY_14.values,
-                *_KodiWeatherProperties.HOURLY_15.values,
-                *_KodiWeatherProperties.HOURLY_16.values,
-                *_KodiWeatherProperties.HOURLY_17.values,
-                *_KodiWeatherProperties.HOURLY_18.values,
-                *_KodiWeatherProperties.HOURLY_19.values,
-                *_KodiWeatherProperties.HOURLY_20.values,
-                *_KodiWeatherProperties.HOURLY_21.values,
-                *_KodiWeatherProperties.HOURLY_22.values,
-                *_KodiWeatherProperties.HOURLY_23.values,
-                *_KodiWeatherProperties.HOURLY_24.values,
-                *_KodiWeatherProperties.DAILY_1.values,
-                *_KodiWeatherProperties.DAILY_2.values,
-                *_KodiWeatherProperties.DAILY_3.values,
-                *_KodiWeatherProperties.DAILY_4.values,
-                *_KodiWeatherProperties.DAILY_5.values,
-                *_KodiWeatherProperties.DAILY_6.values,
-                *_KodiWeatherProperties.DAILY_7.values,
-                *_KodiWeatherProperties.DAY0.values,
-                *_KodiWeatherProperties.DAY1.values,
-                *_KodiWeatherProperties.DAY2.values,
-                *_KodiWeatherProperties.DAY3.values,
-                *_KodiWeatherProperties.DAY4.values,
-                *_KodiWeatherProperties.DAY5.values,
-                *_KodiWeatherProperties.DAY6.values,
-        ):
-            self._set_window_property(key=key, value="")
+        for property_set in _KodiWeatherProperties.all():
+            for key in property_set.values:
+                self._set_window_property(key=key, value="")
 
     def set_weather_properties(self, forecast: KodiForecastData) -> None:
         whole_number = "{:.0f}".format
@@ -184,32 +144,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
         # hourly
         for hourly_forecast, hourly_properties in zip(
                 forecast.HourlyForecasts,
-                (
-                        _KodiWeatherProperties.HOURLY_1,
-                        _KodiWeatherProperties.HOURLY_2,
-                        _KodiWeatherProperties.HOURLY_3,
-                        _KodiWeatherProperties.HOURLY_4,
-                        _KodiWeatherProperties.HOURLY_5,
-                        _KodiWeatherProperties.HOURLY_6,
-                        _KodiWeatherProperties.HOURLY_7,
-                        _KodiWeatherProperties.HOURLY_8,
-                        _KodiWeatherProperties.HOURLY_9,
-                        _KodiWeatherProperties.HOURLY_10,
-                        _KodiWeatherProperties.HOURLY_11,
-                        _KodiWeatherProperties.HOURLY_12,
-                        _KodiWeatherProperties.HOURLY_13,
-                        _KodiWeatherProperties.HOURLY_14,
-                        _KodiWeatherProperties.HOURLY_15,
-                        _KodiWeatherProperties.HOURLY_16,
-                        _KodiWeatherProperties.HOURLY_17,
-                        _KodiWeatherProperties.HOURLY_18,
-                        _KodiWeatherProperties.HOURLY_19,
-                        _KodiWeatherProperties.HOURLY_20,
-                        _KodiWeatherProperties.HOURLY_21,
-                        _KodiWeatherProperties.HOURLY_22,
-                        _KodiWeatherProperties.HOURLY_23,
-                        _KodiWeatherProperties.HOURLY_24,
-                )
+                _KodiWeatherProperties.hourlies()
         ):
             hourly_forecast: KodiHourlyForecastData
             hourly_properties: _KodiHourlyWeatherProperties
@@ -273,24 +208,8 @@ class KodiHomeAssistantWeatherPluginAdapter:
         # daily
         for daily_forecast, daily_properties, daily_properties_compat in zip(
             forecast.DailyForecasts,
-                (
-                    _KodiWeatherProperties.DAILY_1,
-                    _KodiWeatherProperties.DAILY_2,
-                    _KodiWeatherProperties.DAILY_3,
-                    _KodiWeatherProperties.DAILY_4,
-                    _KodiWeatherProperties.DAILY_5,
-                    _KodiWeatherProperties.DAILY_6,
-                    _KodiWeatherProperties.DAILY_7,
-                ),
-                (
-                    _KodiWeatherProperties.DAY0,
-                    _KodiWeatherProperties.DAY1,
-                    _KodiWeatherProperties.DAY2,
-                    _KodiWeatherProperties.DAY3,
-                    _KodiWeatherProperties.DAY4,
-                    _KodiWeatherProperties.DAY5,
-                    _KodiWeatherProperties.DAY6,
-                )
+            _KodiWeatherProperties.dailies(),
+            _KodiWeatherProperties.dailies_compat(),
         ):
             daily_forecast: KodiDailyForecastData
             daily_properties: _KodiDailyWeatherProperties
