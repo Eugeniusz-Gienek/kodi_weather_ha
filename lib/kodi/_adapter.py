@@ -235,6 +235,10 @@ class KodiHomeAssistantWeatherPluginAdapter:
                 value=daily_forecast.condition_str
             )
             self._set_window_property(
+                key=daily_properties.OUTLOOK_ICON,
+                value=daily_forecast.outlook_icon
+            )
+            self._set_window_property(
                 key=daily_properties.FANART_CODE,
                 value=whole_number(daily_forecast.fanart_code)
             )
