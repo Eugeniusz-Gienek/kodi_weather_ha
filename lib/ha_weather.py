@@ -70,7 +70,7 @@ class KodiHomeAssistantWeatherPlugin:
             condition=KodiHomeAssistantWeatherPlugin.__translate_condition(
                 ha_condition=ha_forecast.condition
             ),
-            timestamp=datetime.fromisoformat(ha_forecast.datetime),
+            timestamp=KodiHomeAssistantWeatherPlugin.__parse_homeassistant_datetime(datetime_str=ha_forecast.datetime),
             pressure="",        # TODO: NoneType handling
         )
 
@@ -87,7 +87,7 @@ class KodiHomeAssistantWeatherPlugin:
             condition=KodiHomeAssistantWeatherPlugin.__translate_condition(
                 ha_condition=ha_forecast.condition
             ),
-            timestamp=datetime.fromisoformat(ha_forecast.datetime),
+            timestamp=KodiHomeAssistantWeatherPlugin.__parse_homeassistant_datetime(datetime_str=ha_forecast.datetime),
             low_temperature=KodiHomeAssistantWeatherPlugin.__format_temperature(temperature=ha_forecast.templow, temperature_unit=forecast_meta.temperature_unit)
         )
 
@@ -210,6 +210,11 @@ class KodiHomeAssistantWeatherPlugin:
     @staticmethod
     def __format_temperature(temperature: float, temperature_unit: str) -> str:
         return "{:.0f} {}".format(temperature, temperature_unit)
+
+    @staticmethod
+    def __parse_homeassistant_datetime(datetime_str: str) -> datetime:
+        # tz=None adds time offset to match Kodi's set time
+        return datetime.fromisoformat(datetime_str).astimezone(tz=None)
 
     def apply_forecast(self):
         forecast = self._get_forecast_handling_errors()
