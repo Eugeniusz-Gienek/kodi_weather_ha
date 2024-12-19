@@ -51,22 +51,24 @@ class KodiHomeAssistantWeatherPlugin:
     def __translate_hourly_ha_forecast_to_kodi_forecast(
             ha_forecast: HomeAssistantHourlyForecast, forecast_meta: HomeAssistantForecastMeta
     ) -> KodiHourlyForecastData:
+        current_temperature_celsius: float = ha_forecast.temperature        # TODO: Ensure conversion
+        current_wind_speed_kph: float = ha_forecast.wind_speed              # TODO: Ensure conversion
         return KodiHourlyForecastData(
-            temperature=KodiHomeAssistantWeatherPlugin.__format_temperature(temperature=ha_forecast.temperature, temperature_unit=forecast_meta.temperature_unit),
-            wind_speed=ha_forecast.wind_speed,  # TODO: Ensure kph
+            temperature=KodiHomeAssistantWeatherPlugin.__format_temperature(temperature=current_temperature_celsius, temperature_unit=forecast_meta.temperature_unit),
+            wind_speed=current_wind_speed_kph,
             wind_direction=KodiWindDirectionCode.from_bearing(bearing=ha_forecast.wind_bearing),
             precipitation=KodiHomeAssistantWeatherPlugin.__format_precipitation(
                 precipitation=ha_forecast.precipitation, precipitation_unit=forecast_meta.precipitation_unit
             ),
             humidity=ha_forecast.humidity,
             feels_like=KodiHomeAssistantWeatherPlugin.__calculate_feels_like(
-                temperature_celsius=ha_forecast.temperature,
-                wind_speed_kph=ha_forecast.wind_speed,
-            ),  # TODO: Ensure °C, Ensure kph
+                temperature_celsius=current_temperature_celsius,
+                wind_speed_kph=current_wind_speed_kph,
+            ),  # TODO: Convert result
             dew_point=KodiHomeAssistantWeatherPlugin.__calculate_dew_point(
-                temperature_celsius=ha_forecast.temperature,
+                temperature_celsius=current_temperature_celsius,
                 humidity_percent=ha_forecast.humidity
-            ),  # TODO: Ensure °C
+            ),  # TODO: Convert result
             condition=KodiHomeAssistantWeatherPlugin.__translate_condition(
                 ha_condition=ha_forecast.condition
             ),
@@ -77,9 +79,11 @@ class KodiHomeAssistantWeatherPlugin:
     @staticmethod
     def __translate_daily_ha_forecast_to_kodi_forecast(
             ha_forecast: HomeAssistantDailyForecast, forecast_meta: HomeAssistantForecastMeta) -> KodiDailyForecastData:
+        current_temperature_celsius: float = ha_forecast.temperature        # TODO: Ensure conversion
+        current_wind_speed_kph: float = ha_forecast.wind_speed              # TODO: Ensure conversion
         return KodiDailyForecastData(
-            temperature=KodiHomeAssistantWeatherPlugin.__format_temperature(temperature=ha_forecast.temperature, temperature_unit=forecast_meta.temperature_unit),
-            wind_speed=ha_forecast.wind_speed,  # TODO: Ensure kph
+            temperature=KodiHomeAssistantWeatherPlugin.__format_temperature(temperature=current_temperature_celsius, temperature_unit=forecast_meta.temperature_unit),
+            wind_speed=current_wind_speed_kph,
             wind_direction=KodiWindDirectionCode.from_bearing(bearing=ha_forecast.wind_bearing),
             precipitation=KodiHomeAssistantWeatherPlugin.__format_precipitation(
                 precipitation=ha_forecast.precipitation, precipitation_unit=forecast_meta.precipitation_unit
@@ -93,13 +97,15 @@ class KodiHomeAssistantWeatherPlugin:
 
     @staticmethod
     def __translate_ha_forecast_to_kodi_forecast(ha_forecast: HomeAssistantForecast) -> KodiForecastData:
+        current_temperature_celsius: float = ha_forecast.current.temperature        # TODO: Ensure conversion
+        current_wind_speed_kph: float = ha_forecast.current.wind_speed              # TODO: Ensure conversion
         return KodiForecastData(
             General=KodiGeneralForecastData(
                 location=ha_forecast.current.friendly_name
             ),
             Current=KodiCurrentForecastData(
-                temperature=ha_forecast.current.temperature,  # TODO: Ensure °C
-                wind_speed=ha_forecast.current.wind_speed,  # TODO: Ensure kph
+                temperature=current_temperature_celsius,
+                wind_speed=current_wind_speed_kph,
                 wind_direction=KodiWindDirectionCode.from_bearing(bearing=ha_forecast.current.wind_bearing),
                 precipitation=KodiHomeAssistantWeatherPlugin.__format_precipitation(
                     precipitation=ha_forecast.hourly[0].precipitation if len(ha_forecast.hourly) > 0 else None,
@@ -110,13 +116,13 @@ class KodiHomeAssistantWeatherPlugin:
                 ),
                 humidity=ha_forecast.current.humidity,
                 feels_like=KodiHomeAssistantWeatherPlugin.__calculate_feels_like(
-                    temperature_celsius=ha_forecast.current.temperature,
-                    wind_speed_kph=ha_forecast.current.wind_speed,
-                ),  # TODO: Ensure °C, Ensure kph
+                    temperature_celsius=current_temperature_celsius,
+                    wind_speed_kph=current_wind_speed_kph,
+                ),  # TODO: Convert result
                 dew_point=KodiHomeAssistantWeatherPlugin.__calculate_dew_point(
-                    temperature_celsius=ha_forecast.current.temperature,
+                    temperature_celsius=current_temperature_celsius,
                     humidity_percent=ha_forecast.current.humidity
-                ),  # TODO: Ensure °C
+                ),  # TODO: Convert result
                 uv_index=int(ha_forecast.current.uv_index),
                 cloudiness=int(ha_forecast.current.cloud_coverage),
             ),
