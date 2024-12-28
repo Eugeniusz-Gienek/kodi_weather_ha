@@ -47,10 +47,12 @@ class _KodiCurrentWeatherProperties(_NestedProperties):
     FEELS_LIKE = "FeelsLike"
     UV_INDEX = "UVIndex"
     DEW_POINT = "DewPoint"
-    PRECIPITATION = "Precipitation"  # TODO: Is this available
-    CLOUDINESS = "Cloudiness"  # TODO: Is this available
+    PRECIPITATION = "Precipitation"
+    CLOUDINESS = "Cloudiness"
     OUTLOOK_ICON = "OutlookIcon"
     FANART_CODE = "FanartCode"
+    PRESSURE = "Pressure"
+    WIND_CHILL = "WindChill"
 
 
 class _KodiHourlyWeatherProperties(_NestedProperties):

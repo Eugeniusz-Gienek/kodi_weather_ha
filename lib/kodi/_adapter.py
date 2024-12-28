@@ -1,5 +1,6 @@
 import os.path
 from datetime import datetime, UTC
+from typing import Type, Union
 
 import xbmc
 import xbmcaddon
@@ -11,6 +12,8 @@ from ._properties import _KodiWeatherProperties, _KodiHourlyWeatherProperties, _
     _KodiDailyWeatherPropertiesCompat
 from ._settings import _HomeAssistantWeatherPluginSetting, _Setting_Type, _HomeAssistantWeatherPluginSettings
 from ._values import _KodiMagicValues, KodiLogLevel, KodiAddonStrings
+from ..unit.speed import Speed, SpeedUnits, SpeedKph
+from ..unit.temperature import Temperature, TemperatureUnits, TemperatureCelsius
 
 
 class KodiHomeAssistantWeatherPluginAdapter:
@@ -25,12 +28,12 @@ class KodiHomeAssistantWeatherPluginAdapter:
         return self._kodi_addon.getAddonInfo(id=_KodiMagicValues.ADDON_INFO_PATH_ID)
 
     @property
-    def temperature_unit(self):
-        return xbmc.getRegion(id=_KodiMagicValues.REGION_TEMPERATURE_UNIT_ID)
+    def temperature_unit(self) -> Type[Temperature]:
+        return TemperatureUnits[xbmc.getRegion(id=_KodiMagicValues.REGION_TEMPERATURE_UNIT_ID)]
 
     @property
-    def wind_speed_unit(self):
-        return xbmc.getRegion(id=_KodiMagicValues.REGION_WIND_SPEED_UNIT_ID)
+    def wind_speed_unit(self) -> Type[Speed]:
+        return SpeedUnits[xbmc.getRegion(id=_KodiMagicValues.REGION_WIND_SPEED_UNIT_ID)]
 
     def _get_localized_string(self, id: int):
         return self._kodi_addon.getLocalizedString(id=id) or xbmc.getLocalizedString(id=id)
@@ -86,9 +89,15 @@ class KodiHomeAssistantWeatherPluginAdapter:
             for key in property_set.values:
                 self._set_window_property(key=key, value="")
 
+    @staticmethod
+    def format_unit(unit: Union[Temperature, Speed], value_format: str = "{:.0f}") -> str:
+        return (value_format + " {}").format(unit.value, unit.unit)
+
     def set_weather_properties(self, forecast: KodiForecastData) -> None:
-        # TODO: Aeon Nox, Arctic Zephyr wants some temperatures (Overview) in Celsius.
-        whole_number = "{:.0f}".format
+        # TODO: Sunrise, Sunset (Aeon Nox)
+        # TODO: Fanart icon partly-cloudy at night
+        # TODO: Format dates and times as per Kodi's locale
+        percent = "{:.0f} %".format
         true = "true"
         self._set_window_property(key=_KodiWeatherProperties.GENERAL.LOCATION_1, value=forecast.General.location)
         self._set_window_property(key=_KodiWeatherProperties.GENERAL.LOCATIONS, value="1")
@@ -99,11 +108,13 @@ class KodiHomeAssistantWeatherPluginAdapter:
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.TEMPERATURE,
-            value=whole_number(forecast.Current.temperature)
+            value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                TemperatureCelsius.from_si_value(forecast.Current.temperature.si_value())
+            )   # converted by Kodi from °C
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.UV_INDEX,
-            value=whole_number(forecast.Current.uv_index)
+            value=str(forecast.Current.uv_index)
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.OUTLOOK_ICON,
@@ -111,11 +122,13 @@ class KodiHomeAssistantWeatherPluginAdapter:
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.FANART_CODE,
-            value=whole_number(forecast.Current.fanart_code)
+            value=str(forecast.Current.fanart_code)
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.WIND,
-            value=whole_number(forecast.Current.wind_speed)
+            value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                SpeedKph.from_si_value(forecast.Current.wind_speed.si_value())
+            )   # converted by Kodi from km/h
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.WIND_DIRECTION,
@@ -123,15 +136,25 @@ class KodiHomeAssistantWeatherPluginAdapter:
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.HUMIDITY,
-            value=whole_number(forecast.Current.humidity)
+            value=str(forecast.Current.humidity)    # % is added by Kodi
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.DEW_POINT,
-            value=whole_number(forecast.Current.dew_point)
+            value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                TemperatureCelsius.from_si_value(forecast.Current.dew_point.si_value())
+            )     # converted by Kodi from °C
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.FEELS_LIKE,
-            value=whole_number(forecast.Current.feels_like)
+            value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                TemperatureCelsius.from_si_value(forecast.Current.feels_like.si_value())
+            )   # converted by Kodi from °C
+        )
+        self._set_window_property(
+            key=_KodiWeatherProperties.CURRENT.WIND_CHILL,
+            value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                self.temperature_unit.from_si_value(forecast.Current.feels_like.si_value())
+            )
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.PRECIPITATION,
@@ -139,7 +162,11 @@ class KodiHomeAssistantWeatherPluginAdapter:
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.CLOUDINESS,
-            value=whole_number(forecast.Current.cloudiness)
+            value=percent(forecast.Current.cloudiness)
+        )
+        self._set_window_property(
+            key=_KodiWeatherProperties.CURRENT.PRESSURE,
+            value=forecast.Current.pressure
         )
 
         # hourly
@@ -171,11 +198,13 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=hourly_properties.FANART_CODE,
-                value=whole_number(hourly_forecast.fanart_code)
+                value=str(hourly_forecast.fanart_code)
             )
             self._set_window_property(
                 key=hourly_properties.WIND_SPEED,
-                value=whole_number(hourly_forecast.wind_speed)
+                value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                    self.wind_speed_unit.from_si_value(hourly_forecast.wind_speed.si_value())
+                )
             )
             self._set_window_property(
                 key=hourly_properties.WIND_DIRECTION,
@@ -183,19 +212,25 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=hourly_properties.HUMIDITY,
-                value=whole_number(hourly_forecast.humidity)
+                value=percent(hourly_forecast.humidity)
             )
             self._set_window_property(
                 key=hourly_properties.TEMPERATURE,
-                value=hourly_forecast.temperature
+                value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                    self.temperature_unit.from_si_value(hourly_forecast.temperature.si_value())
+                )
             )
             self._set_window_property(
                 key=hourly_properties.DEW_POINT,
-                value=whole_number(hourly_forecast.dew_point)
+                value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                    self.temperature_unit.from_si_value(hourly_forecast.dew_point.si_value())
+                )
             )
             self._set_window_property(
                 key=hourly_properties.FEELS_LIKE,
-                value=hourly_forecast.feels_like
+                value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                    self.temperature_unit.from_si_value(hourly_forecast.feels_like.si_value())
+                )
             )
             self._set_window_property(
                 key=hourly_properties.PRESSURE,
@@ -225,11 +260,15 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=daily_properties.HIGH_TEMPERATURE,
-                value=daily_forecast.temperature
+                value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                    self.temperature_unit.from_si_value(daily_forecast.temperature.si_value())
+                )
             )
             self._set_window_property(
                 key=daily_properties.LOW_TEMPERATURE,
-                value=daily_forecast.low_temperature
+                value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                    self.temperature_unit.from_si_value(daily_forecast.low_temperature.si_value())
+                )
             )
             self._set_window_property(
                 key=daily_properties.OUTLOOK,
@@ -241,11 +280,13 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=daily_properties.FANART_CODE,
-                value=whole_number(daily_forecast.fanart_code)
+                value=str(daily_forecast.fanart_code)
             )
             self._set_window_property(
                 key=daily_properties.WIND_SPEED,
-                value=whole_number(daily_forecast.wind_speed)
+                value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                    self.wind_speed_unit.from_si_value(daily_forecast.wind_speed.si_value())
+                )
             )
             self._set_window_property(
                 key=daily_properties.WIND_DIRECTION,
@@ -261,11 +302,15 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=daily_properties_compat.HIGH_TEMP,
-                value=daily_forecast.temperature
+                value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                    TemperatureCelsius.from_si_value(daily_forecast.temperature.si_value())
+                )   # converted by skins from °C
             )
             self._set_window_property(
                 key=daily_properties_compat.LOW_TEMP,
-                value=daily_forecast.low_temperature
+                value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                    TemperatureCelsius.from_si_value(daily_forecast.low_temperature.si_value())
+                )   # converted by skins from °C
             )
             self._set_window_property(
                 key=daily_properties_compat.OUTLOOK,
@@ -277,7 +322,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=daily_properties_compat.FANART_CODE,
-                value=whole_number(daily_forecast.fanart_code)
+                value=str(daily_forecast.fanart_code)
             )
         # general
         # TODO: Override location from settings
@@ -349,26 +394,3 @@ class KodiHomeAssistantWeatherPluginAdapter:
             key=_KodiWeatherProperties.GENERAL.DAILY_IS_FETCHED,
             value=true
         )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

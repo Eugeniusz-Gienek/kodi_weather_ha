@@ -3,6 +3,9 @@ from datetime import datetime
 from enum import IntEnum
 from typing import List
 
+from lib.unit.speed import Speed
+from lib.unit.temperature import Temperature
+
 
 class KodiConditionCode(IntEnum):
     TORNADO = 0
@@ -117,8 +120,8 @@ class KodiWindDirectionCode(IntEnum):
 
 @dataclass
 class _KodiForecastCommon:
-    temperature: float                      # unit: °C
-    wind_speed: float                       # unit: kph
+    temperature: Temperature
+    wind_speed: Speed
     wind_direction: KodiWindDirectionCode   # eg: NNE
     precipitation: str                      # with unit
 
@@ -126,8 +129,8 @@ class _KodiForecastCommon:
 @dataclass
 class _KodiDetailedForecastCommon:
     humidity: float     # unit: %
-    feels_like: str     # with unit
-    dew_point: float    # unit: °C
+    feels_like: Temperature
+    dew_point: Temperature
 
 
 @dataclass
@@ -149,7 +152,6 @@ class _KodiConditionedForecastCommon:
 
 @dataclass
 class _KodiFutureForecastCommon:
-    temperature: str        # with unit
     timestamp: datetime
 
 
@@ -162,7 +164,7 @@ class KodiGeneralForecastData:
 class KodiCurrentForecastData(_KodiForecastCommon, _KodiDetailedForecastCommon, _KodiConditionedForecastCommon):
     uv_index: int
     cloudiness: int     # unit: %
-    feels_like: float   # unit: °C
+    pressure: str       # with unit
 
 
 @dataclass
@@ -174,7 +176,7 @@ class KodiHourlyForecastData(
 
 @dataclass
 class KodiDailyForecastData(_KodiFutureForecastCommon, _KodiForecastCommon, _KodiConditionedForecastCommon):
-    low_temperature: str  # with unit
+    low_temperature: Temperature
 
 
 @dataclass

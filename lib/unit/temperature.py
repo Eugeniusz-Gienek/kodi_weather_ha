@@ -1,12 +1,15 @@
-from abc import ABC
+from abc import abstractmethod
 from typing import Mapping, Type
 
 from lib.unit._util import _ValueWithUnit
 
 
-class Temperature(_ValueWithUnit, ABC):
-    # Just another layer of abstraction
-    pass
+class Temperature(_ValueWithUnit):
+
+    @staticmethod
+    @abstractmethod
+    def from_si_value(value: float) -> 'Temperature':
+        raise NotImplementedError
 
 
 # Conversions see https://en.wikipedia.org/wiki/Conversion_of_scales_of_temperature

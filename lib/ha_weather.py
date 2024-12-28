@@ -10,7 +10,7 @@ from lib.kodi import (
     KodiHomeAssistantWeatherPluginAdapter, KodiAddonStrings, KodiLogLevel, KodiGeneralForecastData, KodiForecastData,
     KodiCurrentForecastData, KodiWindDirectionCode, KodiConditionCode, KodiHourlyForecastData, KodiDailyForecastData
 )
-from lib.unit.speed import SpeedKph
+from lib.unit.speed import SpeedKph, SpeedUnits, Speed
 from lib.unit.temperature import TemperatureUnits, TemperatureCelsius, Temperature
 
 # get settings...
@@ -49,78 +49,63 @@ class KodiHomeAssistantWeatherPlugin:
                 message = KodiAddonStrings.HOMEASSISTANT_UNEXPECTED_RESPONSE
             self._kodi_adapter.dialog(message_id=message)
 
+    @staticmethod
     def __translate_hourly_ha_forecast_to_kodi_forecast(
-            self, ha_forecast: HomeAssistantHourlyForecast, forecast_meta: HomeAssistantForecastMeta
+            ha_forecast: HomeAssistantHourlyForecast, forecast_meta: HomeAssistantForecastMeta
     ) -> KodiHourlyForecastData:
-        current_temperature_celsius: TemperatureCelsius = TemperatureCelsius.from_si_value(
-            TemperatureUnits[forecast_meta.temperature_unit](ha_forecast.temperature).si_value()
-        )
-        current_wind_speed_kph: SpeedKph = SpeedKph.from_si_value(
-            TemperatureUnits[forecast_meta.wind_speed_unit](ha_forecast.wind_speed).si_value()
-        )
+        temperature = TemperatureUnits[forecast_meta.temperature_unit](ha_forecast.temperature)
+        wind_speed = SpeedUnits[forecast_meta.wind_speed_unit](ha_forecast.wind_speed)
         return KodiHourlyForecastData(
-            temperature=self.__convert_and_format_temperature(value=current_temperature_celsius),
-            wind_speed=current_wind_speed_kph.value,  # TODO: Ensure conversion
+            temperature=temperature,
+            wind_speed=wind_speed,
             wind_direction=KodiWindDirectionCode.from_bearing(bearing=ha_forecast.wind_bearing),
             precipitation=KodiHomeAssistantWeatherPlugin.__format_precipitation(
                 precipitation=ha_forecast.precipitation, precipitation_unit=forecast_meta.precipitation_unit
             ),
             humidity=ha_forecast.humidity,
-            feels_like=self.__convert_and_format_temperature(
-                value=KodiHomeAssistantWeatherPlugin.__calculate_feels_like(
-                    temperature_celsius=current_temperature_celsius,
-                    wind_speed_kph=current_wind_speed_kph,
-                )
+            feels_like=KodiHomeAssistantWeatherPlugin.__calculate_feels_like(
+                temperature=temperature,
+                wind_speed=wind_speed
             ),
             dew_point=KodiHomeAssistantWeatherPlugin.__calculate_dew_point(
-                temperature_celsius=current_temperature_celsius,
+                temperature=temperature,
                 humidity_percent=ha_forecast.humidity
-            ).value,  # TODO: Convert result
+            ),
             condition=KodiHomeAssistantWeatherPlugin.__translate_condition(
                 ha_condition=ha_forecast.condition
             ),
             timestamp=KodiHomeAssistantWeatherPlugin.__parse_homeassistant_datetime(datetime_str=ha_forecast.datetime),
-            pressure="",        # TODO: NoneType handling
+            pressure="",
         )
 
+    @staticmethod
     def __translate_daily_ha_forecast_to_kodi_forecast(
-            self,
             ha_forecast: HomeAssistantDailyForecast, forecast_meta: HomeAssistantForecastMeta) -> KodiDailyForecastData:
-        current_temperature_celsius: TemperatureCelsius = TemperatureCelsius.from_si_value(
-            TemperatureUnits[forecast_meta.temperature_unit](ha_forecast.temperature).si_value()
-        )
-        low_temperature_celsius: TemperatureCelsius = TemperatureCelsius.from_si_value(
-            TemperatureUnits[forecast_meta.temperature_unit](ha_forecast.templow).si_value()
-        )
-        current_wind_speed_kph: SpeedKph = SpeedKph.from_si_value(
-            TemperatureUnits[forecast_meta.wind_speed_unit](ha_forecast.wind_speed).si_value()
-        )
+        temperature = TemperatureUnits[forecast_meta.temperature_unit](ha_forecast.temperature)
+        low_temperature = TemperatureUnits[forecast_meta.temperature_unit](ha_forecast.templow)
+        wind_speed = SpeedUnits[forecast_meta.wind_speed_unit](ha_forecast.wind_speed)
         return KodiDailyForecastData(
-            temperature=self.__convert_and_format_temperature(value=current_temperature_celsius),
-            wind_speed=current_wind_speed_kph.value,  # TODO: Ensure conversion
+            temperature=temperature,
+            wind_speed=wind_speed,
             wind_direction=KodiWindDirectionCode.from_bearing(bearing=ha_forecast.wind_bearing),
             precipitation=KodiHomeAssistantWeatherPlugin.__format_precipitation(
                 precipitation=ha_forecast.precipitation, precipitation_unit=forecast_meta.precipitation_unit
             ),
             condition=KodiHomeAssistantWeatherPlugin.__translate_condition(ha_condition=ha_forecast.condition),
             timestamp=KodiHomeAssistantWeatherPlugin.__parse_homeassistant_datetime(datetime_str=ha_forecast.datetime),
-            low_temperature=self.__convert_and_format_temperature(value=low_temperature_celsius)
+            low_temperature=low_temperature,
         )
 
     def __translate_ha_forecast_to_kodi_forecast(self, ha_forecast: HomeAssistantForecast) -> KodiForecastData:
-        current_temperature_celsius: TemperatureCelsius = TemperatureCelsius.from_si_value(
-            TemperatureUnits[ha_forecast.current.temperature_unit](ha_forecast.current.temperature).si_value()
-        )
-        current_wind_speed_kph: SpeedKph = SpeedKph.from_si_value(
-            TemperatureUnits[ha_forecast.current.wind_speed_unit](ha_forecast.current.wind_speed).si_value()
-        )
+        temperature = TemperatureUnits[ha_forecast.current.temperature_unit](ha_forecast.current.temperature)
+        wind_speed = SpeedUnits[ha_forecast.current.wind_speed_unit](ha_forecast.current.wind_speed)
         return KodiForecastData(
             General=KodiGeneralForecastData(
                 location=ha_forecast.current.friendly_name
             ),
             Current=KodiCurrentForecastData(
-                temperature=current_temperature_celsius.value,  # current -> do not convert
-                wind_speed=current_wind_speed_kph.value,        # current -> do not convert
+                temperature=temperature,
+                wind_speed=wind_speed,
                 wind_direction=KodiWindDirectionCode.from_bearing(bearing=ha_forecast.current.wind_bearing),
                 precipitation=KodiHomeAssistantWeatherPlugin.__format_precipitation(
                     precipitation=ha_forecast.hourly[0].precipitation if len(ha_forecast.hourly) > 0 else None,
@@ -131,15 +116,18 @@ class KodiHomeAssistantWeatherPlugin:
                 ),
                 humidity=ha_forecast.current.humidity,
                 feels_like=KodiHomeAssistantWeatherPlugin.__calculate_feels_like(
-                    temperature_celsius=current_temperature_celsius,
-                    wind_speed_kph=current_wind_speed_kph,
-                ).value,                                        # current -> do not convert
+                    temperature=temperature,
+                    wind_speed=wind_speed,
+                ),
                 dew_point=KodiHomeAssistantWeatherPlugin.__calculate_dew_point(
-                    temperature_celsius=current_temperature_celsius,
+                    temperature=temperature,
                     humidity_percent=ha_forecast.current.humidity
-                ).value,                                        # current -> do not convert
+                ),
                 uv_index=int(ha_forecast.current.uv_index),
                 cloudiness=int(ha_forecast.current.cloud_coverage),
+                pressure=KodiHomeAssistantWeatherPlugin.__format_pressure(
+                    pressure=ha_forecast.current.pressure, pressure_unit=ha_forecast.current.pressure_unit
+                )
             ),
             HourlyForecasts=[
                 self.__translate_hourly_ha_forecast_to_kodi_forecast(
@@ -158,7 +146,8 @@ class KodiHomeAssistantWeatherPlugin:
         )
 
     @staticmethod
-    def __calculate_dew_point(temperature_celsius: TemperatureCelsius, humidity_percent: float) -> TemperatureCelsius:
+    def __calculate_dew_point(temperature: Temperature, humidity_percent: float) -> TemperatureCelsius:
+        temperature_celsius = TemperatureCelsius.from_si_value(temperature.si_value())
         # obtain saturation vapor pressure (pressure at which water in air will condensate)
         vapor_pressure_sat = 6.11 * 10.0 ** (7.5 * temperature_celsius.value / (237.7 + temperature_celsius.value))
         # we set a minimum of .075 % to make the math defined
@@ -171,7 +160,9 @@ class KodiHomeAssistantWeatherPlugin:
         )
 
     @staticmethod
-    def __calculate_feels_like(temperature_celsius: TemperatureCelsius, wind_speed_kph: SpeedKph) -> TemperatureCelsius:
+    def __calculate_feels_like(temperature: Temperature, wind_speed: Speed) -> TemperatureCelsius:
+        temperature_celsius = TemperatureCelsius.from_si_value(temperature.si_value())
+        wind_speed_kph = SpeedKph.from_si_value(wind_speed.si_value())
         # Model: Wind Chill JAG/TI Environment Canada
         # see https://en.wikipedia.org/wiki/Wind_chill#North_American_and_United_Kingdom_wind_chill_index
         return TemperatureCelsius(
@@ -230,10 +221,11 @@ class KodiHomeAssistantWeatherPlugin:
             fmt = "{:.1f} {}"
         return fmt.format(precipitation, precipitation_unit)
 
-    def __convert_and_format_temperature(self, value: Temperature) -> str:
-        converted_temperature = TemperatureUnits[self._kodi_adapter.temperature_unit].from_si_value(value.si_value())
-        self._kodi_adapter.log(message="Converted " + repr(value) + " -> " + repr(converted_temperature), level=KodiLogLevel.DEBUG)
-        return "{:.0f} {}".format(converted_temperature.value, converted_temperature.unit)
+    @staticmethod
+    def __format_pressure(pressure: Union[float, None], pressure_unit: str) -> str:
+        if pressure is None:
+            return ""
+        return "{:.0f} {}".format(pressure, pressure_unit)
 
     @staticmethod
     def __parse_homeassistant_datetime(datetime_str: str) -> datetime:

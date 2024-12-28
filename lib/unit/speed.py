@@ -1,12 +1,15 @@
-from abc import ABC
+from abc import abstractmethod
 from typing import Mapping, Type
 
 from lib.unit._util import _ValueWithUnit
 
 
-class Speed(_ValueWithUnit, ABC):
-    # Just another layer of abstraction
-    pass
+class Speed(_ValueWithUnit):
+
+    @staticmethod
+    @abstractmethod
+    def from_si_value(value: float) -> 'Speed ':
+        raise NotImplementedError
 
 
 _feet_per_meter = 3.28084

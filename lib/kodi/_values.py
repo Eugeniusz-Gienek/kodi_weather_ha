@@ -9,7 +9,7 @@ class _KodiMagicValues:
     ADDON_INFO_ADDON_ID = "id"
     ADDON_INFO_NAME_ID = "name"
     REGION_TEMPERATURE_UNIT_ID = "tempunit"
-    REGION_WIND_SPEED_UNIT_ID = "windspeedunit"
+    REGION_WIND_SPEED_UNIT_ID = "speedunit"
 
 
 class KodiAddonStrings(IntEnum):
