@@ -1,14 +1,11 @@
 import calendar
-import math
 import time
-import urllib.parse
+from abc import abstractmethod
 from datetime import datetime, timedelta
-from math import sqrt
 
 import iso8601
 import xbmc
 import xbmcaddon
-import xbmcgui
 import xbmcvfs
 
 __addon__ = xbmcaddon.Addon()
@@ -27,8 +24,9 @@ SPEEDUNIT = xbmc.getRegion('speedunit')
 MAXDAYS = 6
 
 
-def build_url(base_url, query):
-    return base_url + '?' + urllib.parse.urlencode(query)
+
+
+
 
 
 
@@ -223,116 +221,6 @@ def convert_datetime(stamp, inpt, outpt, form):
 
 
 # Source: https://github.com/xbmc/repo-scripts/blob/krypton/weather.yahoo/default.py
-# convert temperature in Fahrenheit or Celcius to other formats
-# val: temperature
-# inf (input format): 'F' (fahrenheit) or 'C' (celcius)
-# outf (force output format): 'C' (celcius)
-def convert_temp(val, inf, outf=None):
-    if (inf == 'F') or (inf == u'°F'):
-        # fahrenheit to celcius
-        val = (float(val) - 32) * 5 / 9
-    else:
-        val = float(val)
-    if outf == 'C':
-        temp = val
-    elif outf == 'F':
-        temp = val * 9 / 5 + 32
-    elif TEMPUNIT == u'°F':
-        temp = val * 1.8 + 32
-    elif TEMPUNIT == u'K':
-        temp = val + 273.15
-    elif TEMPUNIT == u'°Ré':
-        temp = val * 0.8
-    elif TEMPUNIT == u'°Ra':
-        temp = val * 1.8 + 491.67
-    elif TEMPUNIT == u'°Rø':
-        temp = val * 0.525 + 7.5
-    elif TEMPUNIT == u'°D':
-        temp = val / -0.667 + 150
-    elif TEMPUNIT == u'°N':
-        temp = val * 0.33
-    else:
-        temp = val
-    return str(int(round(temp)))
-
-
-# Source: https://github.com/xbmc/repo-scripts/blob/krypton/weather.yahoo/default.py
-# convert speed in mph or mps to other formats
-# val: speed
-# inf (input format): 'mph' (miles per hour), 'kmh' (kilometers per hour) or 'mps' (metre per seconds)
-# outf (force output format): 'kmh' (kilometre per hour)
-def convert_speed(val, inf, outf=None):
-    if inf == 'mph':
-        val = float(val) / 2.237  # converting mph to mps
-    elif inf == 'kmh':
-        val = float(val) / 3.6  # converting kmh to mps
-    else:
-        val = float(val)
-    # At this point val should be in mps format. Hope so :)
-    if outf == 'kmh':
-        speed = val * 3.6
-    elif SPEEDUNIT == 'km/h':
-        speed = val * 3.6
-    elif SPEEDUNIT == 'm/min':
-        speed = val * 60.0
-    elif SPEEDUNIT == 'ft/h':
-        speed = val * 11810.88
-    elif SPEEDUNIT == 'ft/min':
-        speed = val * 196.84
-    elif SPEEDUNIT == 'ft/s':
-        speed = val * 3.281
-    elif SPEEDUNIT == 'mph':
-        speed = val * 2.237
-    elif SPEEDUNIT == 'knots':
-        speed = val * 1.944
-    elif SPEEDUNIT == 'Beaufort':
-        speed = float(kph_to_bft(val * 3.6))
-    elif SPEEDUNIT == 'inch/s':
-        speed = val * 39.37
-    elif SPEEDUNIT == 'yard/s':
-        speed = val * 1.094
-    elif SPEEDUNIT == 'Furlong/Fortnight':
-        speed = val * 6012.886
-    else:
-        speed = val
-    return str(int(round(speed)))
-
-
-# Source: https://github.com/xbmc/repo-scripts/blob/krypton/weather.yahoo/default.py
-# convert windspeed in km/h to beaufort
-def kph_to_bft(spd):
-    if spd < 1.0:
-        bft = '0'
-    elif 1.0 <= spd < 5.6:
-        bft = '1'
-    elif 5.6 <= spd < 12.0:
-        bft = '2'
-    elif 12.0 <= spd < 20.0:
-        bft = '3'
-    elif 20.0 <= spd < 29.0:
-        bft = '4'
-    elif 29.0 <= spd < 39.0:
-        bft = '5'
-    elif 39.0 <= spd < 50.0:
-        bft = '6'
-    elif 50.0 <= spd < 62.0:
-        bft = '7'
-    elif 62.0 <= spd < 75.0:
-        bft = '8'
-    elif 75.0 <= spd < 89.0:
-        bft = '9'
-    elif 89.0 <= spd < 103.0:
-        bft = '10'
-    elif 103.0 <= spd < 118.0:
-        bft = '11'
-    elif spd >= 118.0:
-        bft = '12'
-    else:
-        bft = ''
-    return bft
-
-
-# Source: https://github.com/xbmc/repo-scripts/blob/krypton/weather.yahoo/default.py
 def convert_seconds(sec):
     m, s = divmod(sec, 60)
     h, m = divmod(m, 60)
@@ -341,40 +229,6 @@ def convert_seconds(sec):
         timestruct = time.strptime(hm, "%H:%M")
         hm = time.strftime('%I:%M %p', timestruct)
     return hm
-
-
-# calculate windchill in fahrenheit from temperature in fahrenheit and windspeed in mph
-def windchill(temp, speed):
-    if temp < 51 and speed > 2:
-        return str(int(round(35.74 + 0.6215 * temp - 35.75 * (speed ** 0.16) + 0.4275 * temp * (speed ** 0.16))))
-    else:
-        return temp
-
-
-
-# Source: https://community.openhab.org/t/apparent-temperature/104066/7
-# https://www.wpc.ncep.noaa.gov/html/heatindex.shtml
-# https://www.weather.gov/ama/heatindex
-# https://www.wpc.ncep.noaa.gov/html/heatindex_equation.shtml
-def calculate_feels_like(T, RH):
-    # T is expected in formula to be in F. In function - in C.
-    T = float(T)
-    RH = float(RH)
-    T = float(convert_temp(T, 'C', 'F'))
-    HI = T
-    if T < 40:
-        HI = T
-    else:
-        HI = -42.379 + 2.04901523 * T + 10.14333127 * RH - 0.22475541 * T * RH - 0.00683783 * T * T - 0.05481717 * RH * RH + 0.00122874 * T * T * RH + 0.00085282 * T * RH * RH - 0.00000199 * T * T * RH * RH
-        if RH < 13 and 80 <= T <= 112:
-            adjust = ((13 - RH) / 4) * sqrt(17 - abs(T - 95) / 17)
-            HI -= adjust
-        elif (RH > 85) and 80 <= T <= 87:
-            adjust = ((RH - 85) / 10) * ((87 - T) / 5)
-            HI += adjust
-        elif T < 80:
-            HI = 0.5 * (T + 61.0 + ((T - 68.0) * 1.2) + (RH * 0.094))
-    return float(convert_temp(HI, 'F', None))
 
 
 def fix_condition_translation_codes(s):

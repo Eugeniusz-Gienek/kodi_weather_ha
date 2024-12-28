@@ -1,10 +1,16 @@
-from enum import Enum
+from abc import ABC
+from typing import Mapping, Type
 
 from lib.unit._util import _ValueWithUnit
 
 
+class Temperature(_ValueWithUnit, ABC):
+    # Just another layer of abstraction
+    pass
+
+
 # Conversions see https://en.wikipedia.org/wiki/Conversion_of_scales_of_temperature
-class TemperatureCelsius(_ValueWithUnit):
+class TemperatureCelsius(Temperature):
     unit = "°C"
 
     def si_value(self) -> float:
@@ -15,7 +21,7 @@ class TemperatureCelsius(_ValueWithUnit):
         return TemperatureCelsius(value - 273.15)
 
 
-class TemperatureFahrenheit(_ValueWithUnit):
+class TemperatureFahrenheit(TemperatureCelsius):
     unit = "°F"
 
     def si_value(self) -> float:
@@ -26,7 +32,7 @@ class TemperatureFahrenheit(_ValueWithUnit):
         return TemperatureFahrenheit(value * 1.8 - 459.67)
 
 
-class TemperatureKelvin(_ValueWithUnit):
+class TemperatureKelvin(Temperature):
     unit = "K"
 
     def si_value(self) -> float:
@@ -37,7 +43,7 @@ class TemperatureKelvin(_ValueWithUnit):
         return TemperatureKelvin(value)
 
 
-class TemperatureRankine(_ValueWithUnit):
+class TemperatureRankine(TemperatureCelsius):
     unit = "°Ra"
 
     def si_value(self) -> float:
@@ -48,7 +54,7 @@ class TemperatureRankine(_ValueWithUnit):
         return TemperatureRankine(value * 1.8)
 
 
-class TemperatureReaumur(_ValueWithUnit):
+class TemperatureReaumur(Temperature):
     unit = "°Ré"
 
     def si_value(self) -> float:
@@ -59,7 +65,7 @@ class TemperatureReaumur(_ValueWithUnit):
         return TemperatureReaumur(value / 0.8 + 273.15)
 
 
-class TemperatureRomer(_ValueWithUnit):
+class TemperatureRomer(Temperature):
     unit = "°Rø"
 
     def si_value(self) -> float:
@@ -70,7 +76,7 @@ class TemperatureRomer(_ValueWithUnit):
         return TemperatureRomer((value - 7.5) / 0.525 + 273.15)
 
 
-class TemperatureDelisle(_ValueWithUnit):
+class TemperatureDelisle(Temperature):
     unit = "°De"
 
     def si_value(self) -> float:
@@ -81,7 +87,7 @@ class TemperatureDelisle(_ValueWithUnit):
         return TemperatureDelisle(373.15 - value / 1.5)
 
 
-class TemperatureNewton(_ValueWithUnit):
+class TemperatureNewton(Temperature):
     unit = "°N"
 
     def si_value(self) -> float:
@@ -92,7 +98,7 @@ class TemperatureNewton(_ValueWithUnit):
         return TemperatureNewton(value / 0.33 + 273.15)
 
 
-TemperatureUnits = {
+TemperatureUnits: Mapping[str, Type[Temperature]] = {
     TemperatureCelsius.unit: TemperatureCelsius,
     TemperatureFahrenheit.unit: TemperatureFahrenheit,
     TemperatureKelvin.unit: TemperatureKelvin,

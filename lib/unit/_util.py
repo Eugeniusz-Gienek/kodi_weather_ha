@@ -7,6 +7,9 @@ class _ValueWithUnit:
     def __init__(self, value: float):
         self.value = value
 
+    def __repr__(self) -> str:
+        return "{} {}".format(self.value, self.unit)
+
     @abstractmethod
     def si_value(self) -> float:
         raise NotImplementedError

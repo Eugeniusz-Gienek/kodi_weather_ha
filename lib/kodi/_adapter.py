@@ -87,6 +87,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
                 self._set_window_property(key=key, value="")
 
     def set_weather_properties(self, forecast: KodiForecastData) -> None:
+        # TODO: Aeon Nox, Arctic Zephyr wants some temperatures (Overview) in Celsius.
         whole_number = "{:.0f}".format
         true = "true"
         self._set_window_property(key=_KodiWeatherProperties.GENERAL.LOCATION_1, value=forecast.General.location)
@@ -194,7 +195,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=hourly_properties.FEELS_LIKE,
-                value=whole_number(hourly_forecast.feels_like)
+                value=hourly_forecast.feels_like
             )
             self._set_window_property(
                 key=hourly_properties.PRESSURE,

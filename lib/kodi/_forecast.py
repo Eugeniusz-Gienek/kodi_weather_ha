@@ -126,7 +126,7 @@ class _KodiForecastCommon:
 @dataclass
 class _KodiDetailedForecastCommon:
     humidity: float     # unit: %
-    feels_like: float   # unit: °C
+    feels_like: str     # with unit
     dew_point: float    # unit: °C
 
 
@@ -162,6 +162,7 @@ class KodiGeneralForecastData:
 class KodiCurrentForecastData(_KodiForecastCommon, _KodiDetailedForecastCommon, _KodiConditionedForecastCommon):
     uv_index: int
     cloudiness: int     # unit: %
+    feels_like: float   # unit: °C
 
 
 @dataclass
