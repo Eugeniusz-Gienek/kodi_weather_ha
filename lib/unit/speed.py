@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Mapping, Type
 
-from lib.unit._util import _ValueWithUnit
+from ._util import _ValueWithUnit
 
 
 class Speed(_ValueWithUnit):

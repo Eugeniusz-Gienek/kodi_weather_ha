@@ -5,8 +5,9 @@ import requests
 from requests import RequestException
 
 from ._errors import RequestError
-from ._forecast import (HomeAssistantForecast, HomeAssistantCurrentForecast, HomeAssistantHourlyForecast,
-                        HomeAssistantDailyForecast)
+from ._forecast import (
+    HomeAssistantForecast, HomeAssistantCurrentForecast, HomeAssistantHourlyForecast, HomeAssistantDailyForecast
+)
 from ._sun import HomeAssistantSunInfo, HomeAssistantSunState
 
 

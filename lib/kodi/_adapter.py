@@ -8,13 +8,14 @@ import xbmcaddon
 import xbmcgui
 import xbmcvfs
 
+from lib.unit.speed import Speed, SpeedUnits, SpeedKph
+from lib.unit.temperature import Temperature, TemperatureUnits, TemperatureCelsius
+
 from ._forecast import KodiForecastData, KodiHourlyForecastData, KodiDailyForecastData
 from ._properties import _KodiWeatherProperties, _KodiHourlyWeatherProperties, _KodiDailyWeatherProperties, \
     _KodiDailyWeatherPropertiesCompat
 from ._settings import KodiPluginSetting, _Setting_Type
 from ._values import _KodiMagicValues, KodiLogLevel
-from ..unit.speed import Speed, SpeedUnits, SpeedKph
-from ..unit.temperature import Temperature, TemperatureUnits, TemperatureCelsius
 
 
 class KodiWeatherPluginAdapter:

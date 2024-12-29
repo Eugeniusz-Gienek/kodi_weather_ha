@@ -1,8 +1,10 @@
 import unittest
 from typing import Mapping, Type
 
-from lib.unit.speed import SpeedUnits, SpeedBft, SpeedKph, SpeedMpmin, SpeedMps, SpeedFtph, SpeedFtpm, SpeedFtps, \
-    SpeedMph, SpeedKts, SpeedInps, SpeedYdps, SpeedFpf, Speed
+from lib.unit.speed import (
+    SpeedUnits, SpeedBft, SpeedKph, SpeedMpmin, SpeedMps, SpeedFtph, SpeedFtpm, SpeedFtps, SpeedMph, SpeedKts,
+    SpeedInps, SpeedYdps, SpeedFpf, Speed
+)
 
 SAMPLE = 42.0
 

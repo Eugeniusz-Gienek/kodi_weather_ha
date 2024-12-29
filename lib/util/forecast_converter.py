@@ -1,10 +1,14 @@
 from datetime import datetime
 from typing import Union
 
-from lib.homeassistant import HomeAssistantHourlyForecast, HomeAssistantForecastMeta, HomeAssistantDailyForecast, \
+from lib.homeassistant import (
+    HomeAssistantHourlyForecast, HomeAssistantForecastMeta, HomeAssistantDailyForecast,
     HomeAssistantForecast, HomeAssistantSunInfo, HomeAssistantWeatherCondition
-from lib.kodi import KodiHourlyForecastData, KodiWindDirectionCode, KodiDailyForecastData, KodiForecastData, \
+)
+from lib.kodi import (
+    KodiHourlyForecastData, KodiWindDirectionCode, KodiDailyForecastData, KodiForecastData,
     KodiGeneralForecastData, KodiCurrentForecastData, KodiConditionCode
+)
 from lib.unit.speed import SpeedUnits
 from lib.unit.temperature import TemperatureUnits
 from lib.util.thermal_comfort import ThermalComfort

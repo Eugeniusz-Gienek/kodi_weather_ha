@@ -1,8 +1,10 @@
 import unittest
 from typing import Mapping, Type
 
-from lib.unit.temperature import Temperature, TemperatureCelsius, TemperatureFahrenheit, TemperatureKelvin, \
-    TemperatureReaumur, TemperatureRankine, TemperatureRomer, TemperatureDelisle, TemperatureNewton, TemperatureUnits
+from lib.unit.temperature import (
+    Temperature, TemperatureCelsius, TemperatureFahrenheit, TemperatureKelvin, TemperatureReaumur, TemperatureRankine,
+    TemperatureRomer, TemperatureDelisle, TemperatureNewton, TemperatureUnits
+)
 
 SAMPLE = 345.67
 
