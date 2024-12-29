@@ -94,7 +94,6 @@ class KodiHomeAssistantWeatherPluginAdapter:
         return (value_format + " {}").format(unit.value, unit.unit)
 
     def set_weather_properties(self, forecast: KodiForecastData) -> None:
-        # TODO: Sunrise, Sunset (Aeon Nox)
         # TODO: Fanart icon partly-cloudy at night
         # TODO: Format dates and times as per Kodi's locale
         percent = "{:.0f} %".format
@@ -167,6 +166,14 @@ class KodiHomeAssistantWeatherPluginAdapter:
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.PRESSURE,
             value=forecast.Current.pressure
+        )
+        self._set_window_property(
+            key=_KodiWeatherProperties.GENERAL.SUNRISE,
+            value=forecast.Current.sunrise.strftime("%H:%M")
+        )
+        self._set_window_property(
+            key=_KodiWeatherProperties.GENERAL.SUNSET,
+            value=forecast.Current.sunset.strftime("%H:%M")
         )
 
         # hourly

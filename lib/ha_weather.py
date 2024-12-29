@@ -1,10 +1,10 @@
 import math
 from datetime import datetime
-from typing import Union
+from typing import Union, Tuple
 
 from lib.homeassistant import (
     HomeAssistantAdapter, RequestError, HomeAssistantForecast, HomeAssistantHourlyForecast, HomeAssistantDailyForecast,
-    HomeAssistantWeatherCondition, HomeAssistantForecastMeta
+    HomeAssistantWeatherCondition, HomeAssistantForecastMeta, HomeAssistantSunInfo
 )
 from lib.kodi import (
     KodiHomeAssistantWeatherPluginAdapter, KodiAddonStrings, KodiLogLevel, KodiGeneralForecastData, KodiForecastData,
@@ -30,12 +30,18 @@ class KodiHomeAssistantWeatherPlugin:
             self.apply_forecast()
         self._kodi_adapter.log("Home Assistant Weather init finished.")
 
-    def _get_forecast_handling_errors(self) -> HomeAssistantForecast:
+    def _get_forecast_handling_errors(self) -> Tuple[HomeAssistantForecast, HomeAssistantSunInfo]:
         try:
-            return HomeAssistantAdapter.get_forecast(
-                server_url=self._kodi_adapter.home_assistant_url,
-                entity_id=self._kodi_adapter.home_assistant_entity,
-                token=self._kodi_adapter.home_assistant_token
+            return (
+                HomeAssistantAdapter.get_forecast(
+                    server_url=self._kodi_adapter.home_assistant_url,
+                    entity_id=self._kodi_adapter.home_assistant_entity,
+                    token=self._kodi_adapter.home_assistant_token
+                ),
+                HomeAssistantAdapter.get_sun_info(
+                    server_url=self._kodi_adapter.home_assistant_url,
+                    token=self._kodi_adapter.home_assistant_token
+                )
             )
         except RequestError as e:
             self._kodi_adapter.log(
@@ -96,7 +102,8 @@ class KodiHomeAssistantWeatherPlugin:
             low_temperature=low_temperature,
         )
 
-    def __translate_ha_forecast_to_kodi_forecast(self, ha_forecast: HomeAssistantForecast) -> KodiForecastData:
+    def __translate_ha_forecast_to_kodi_forecast(
+            self, ha_forecast: HomeAssistantForecast, ha_sun_info: HomeAssistantSunInfo) -> KodiForecastData:
         temperature = TemperatureUnits[ha_forecast.current.temperature_unit](ha_forecast.current.temperature)
         wind_speed = SpeedUnits[ha_forecast.current.wind_speed_unit](ha_forecast.current.wind_speed)
         return KodiForecastData(
@@ -127,7 +134,9 @@ class KodiHomeAssistantWeatherPlugin:
                 cloudiness=int(ha_forecast.current.cloud_coverage),
                 pressure=KodiHomeAssistantWeatherPlugin.__format_pressure(
                     pressure=ha_forecast.current.pressure, pressure_unit=ha_forecast.current.pressure_unit
-                )
+                ),
+                sunrise=KodiHomeAssistantWeatherPlugin.__parse_homeassistant_datetime(ha_sun_info.next_rising),
+                sunset=KodiHomeAssistantWeatherPlugin.__parse_homeassistant_datetime(ha_sun_info.next_setting),
             ),
             HourlyForecasts=[
                 self.__translate_hourly_ha_forecast_to_kodi_forecast(
@@ -233,13 +242,18 @@ class KodiHomeAssistantWeatherPlugin:
         return datetime.fromisoformat(datetime_str).astimezone(tz=None)
 
     def apply_forecast(self):
-        forecast = self._get_forecast_handling_errors()
+        forecast, sun_info = self._get_forecast_handling_errors()
         if forecast is None:
             self._kodi_adapter.log(message="No forecasts were found.", level=KodiLogLevel.WARNING)
             self._kodi_adapter.clear_weather_properties()
             return
+        if sun_info is None:
+            self._kodi_adapter.log(message="No sun info was found.", level=KodiLogLevel.WARNING)
+            self._kodi_adapter.clear_weather_properties()
+            return
         kodi_forecast = self.__translate_ha_forecast_to_kodi_forecast(
-            ha_forecast=forecast
+            ha_forecast=forecast,
+            ha_sun_info=sun_info,
         )
         self._kodi_adapter.set_weather_properties(forecast=kodi_forecast)
         self._kodi_adapter.log(message="Weather updated successfully.", level=KodiLogLevel.INFO)

@@ -4,3 +4,4 @@ from ._forecast import (
     HomeAssistantForecast, HomeAssistantCurrentForecast, HomeAssistantHourlyForecast, HomeAssistantDailyForecast,
     HomeAssistantWeatherCondition, HomeAssistantForecastMeta
 )
+from ._sun import HomeAssistantSunInfo

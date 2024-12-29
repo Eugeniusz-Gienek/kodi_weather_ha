@@ -7,6 +7,7 @@ from requests import RequestException
 from ._errors import RequestError
 from ._forecast import (HomeAssistantForecast, HomeAssistantCurrentForecast, HomeAssistantHourlyForecast,
                         HomeAssistantDailyForecast)
+from ._sun import HomeAssistantSunInfo, HomeAssistantSunState
 
 
 class HomeAssistantAdapter:
@@ -55,3 +56,10 @@ class HomeAssistantAdapter:
                 for daily_forecast in daily.json()["service_response"][entity_id]["forecast"]
             ],
         )
+
+    @staticmethod
+    def get_sun_info(server_url: str, token: str) -> HomeAssistantSunInfo:
+        sun_url = urllib.parse.urljoin(base=server_url, url=f"/api/states/sun.sun")
+        sun = HomeAssistantAdapter.__request(url=sun_url, token=token)
+        sun_data = sun.json()
+        return HomeAssistantSunInfo(**sun_data["attributes"], state=HomeAssistantSunState(sun_data["state"]))

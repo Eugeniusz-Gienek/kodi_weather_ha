@@ -165,6 +165,8 @@ class KodiCurrentForecastData(_KodiForecastCommon, _KodiDetailedForecastCommon, 
     uv_index: int
     cloudiness: int     # unit: %
     pressure: str       # with unit
+    sunrise: datetime
+    sunset: datetime
 
 
 @dataclass

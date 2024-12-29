@@ -36,6 +36,8 @@ class _KodiGeneralWeatherProperties(_NestedProperties):
     FORECAST_FETCHED = "Forecast.IsFetched"
     FORECAST_UPDATED = "Forecast.Updated"
     UPDATED = "Updated"
+    SUNRISE = "Today.Sunrise"
+    SUNSET = "Today.Sunset"
 
 
 class _KodiCurrentWeatherProperties(_NestedProperties):
