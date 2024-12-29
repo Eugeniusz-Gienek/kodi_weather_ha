@@ -61,44 +61,44 @@ class TemperatureReaumur(Temperature):
     unit = "°Ré"
 
     def si_value(self) -> float:
-        return (self.value - 273.15) * 0.8
+        return self.value / 0.8 + 273.15
 
     @staticmethod
     def from_si_value(value: float) -> 'TemperatureReaumur':
-        return TemperatureReaumur(value / 0.8 + 273.15)
+        return TemperatureReaumur((value - 273.15) * 0.8)
 
 
 class TemperatureRomer(Temperature):
     unit = "°Rø"
 
     def si_value(self) -> float:
-        return (self.value - 273.15) * 0.525 + 7.5
+        return (self.value - 7.5) / 0.525 + 273.15
 
     @staticmethod
     def from_si_value(value: float) -> 'TemperatureRomer':
-        return TemperatureRomer((value - 7.5) / 0.525 + 273.15)
+        return TemperatureRomer((value - 273.15) * 0.525 + 7.5)
 
 
 class TemperatureDelisle(Temperature):
     unit = "°De"
 
     def si_value(self) -> float:
-        return (373.15 - self.value) * 1.5
+        return 373.15 - self.value / 1.5
 
     @staticmethod
     def from_si_value(value: float) -> 'TemperatureDelisle':
-        return TemperatureDelisle(373.15 - value / 1.5)
+        return TemperatureDelisle((373.15 - value) * 1.5)
 
 
 class TemperatureNewton(Temperature):
     unit = "°N"
 
     def si_value(self) -> float:
-        return (self.value - 273.15) * 0.33
+        return self.value / 0.33 + 273.15
 
     @staticmethod
     def from_si_value(value: float) -> 'TemperatureNewton':
-        return TemperatureNewton(value / 0.33 + 273.15)
+        return TemperatureNewton((value - 273.15) * 0.33)
 
 
 TemperatureUnits: Mapping[str, Type[Temperature]] = {
