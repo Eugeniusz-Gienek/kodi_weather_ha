@@ -35,6 +35,18 @@ class KodiHomeAssistantWeatherPluginAdapter:
     def wind_speed_unit(self) -> Type[Speed]:
         return SpeedUnits[xbmc.getRegion(id=_KodiMagicValues.REGION_WIND_SPEED_UNIT_ID)]
 
+    @property
+    def time_format(self) -> str:
+        return xbmc.getRegion(id=_KodiMagicValues.REGION_TIME_FORMAT_ID)
+
+    @property
+    def short_date_format(self) -> str:
+        return xbmc.getRegion(id=_KodiMagicValues.REGION_SHORT_DATE_FORMAT_ID)
+
+    @property
+    def long_date_format(self) -> str:
+        return xbmc.getRegion(id=_KodiMagicValues.REGION_LONG_DATE_FORMAT_ID)
+
     def _get_localized_string(self, id: int):
         return self._kodi_addon.getLocalizedString(id=id) or xbmc.getLocalizedString(id=id)
 
@@ -94,7 +106,6 @@ class KodiHomeAssistantWeatherPluginAdapter:
         return (value_format + " {}").format(unit.value, unit.unit)
 
     def set_weather_properties(self, forecast: KodiForecastData) -> None:
-        # TODO: Format dates and times as per Kodi's locale
         percent = "{:.0f} %".format
         true = "true"
         self._set_window_property(key=_KodiWeatherProperties.GENERAL.LOCATION_1, value=forecast.General.location)
@@ -168,11 +179,11 @@ class KodiHomeAssistantWeatherPluginAdapter:
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.SUNRISE,
-            value=forecast.Current.sunrise.strftime("%H:%M")
+            value=forecast.Current.sunrise.strftime(self.time_format)
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.SUNSET,
-            value=forecast.Current.sunset.strftime("%H:%M")
+            value=forecast.Current.sunset.strftime(self.time_format)
         )
 
         # hourly
@@ -184,15 +195,15 @@ class KodiHomeAssistantWeatherPluginAdapter:
             hourly_properties: _KodiHourlyWeatherProperties
             self._set_window_property(
                 key=hourly_properties.TIME,
-                value=hourly_forecast.timestamp.strftime("%H:%M")
+                value=hourly_forecast.timestamp.strftime(self.time_format)
             )
             self._set_window_property(
                 key=hourly_properties.LONG_DATE,
-                value=hourly_forecast.timestamp.strftime("%Y-%m-%d")
+                value=hourly_forecast.timestamp.strftime(self.long_date_format)
             )
             self._set_window_property(
                 key=hourly_properties.SHORT_DATE,
-                value=hourly_forecast.timestamp.strftime("%Y-%m-%d")
+                value=hourly_forecast.timestamp.strftime(self.short_date_format)
             )
             self._set_window_property(
                 key=hourly_properties.OUTLOOK,
@@ -258,11 +269,13 @@ class KodiHomeAssistantWeatherPluginAdapter:
             daily_properties_compat: _KodiDailyWeatherPropertiesCompat
             self._set_window_property(
                 key=daily_properties.SHORT_DATE,
-                value=daily_forecast.timestamp.strftime("%Y-%m-%d")
+                value=daily_forecast.timestamp.strftime(self.short_date_format)
             )
             self._set_window_property(
                 key=daily_properties.SHORT_DAY,
-                value=self._get_localized_string(id=daily_forecast.timestamp.isoweekday() + 40)
+                value=self._get_localized_string(
+                    id=daily_forecast.timestamp.isoweekday() + _KodiMagicValues.MESSAGE_OFFSET_DAY_LONG
+                )
             )
             self._set_window_property(
                 key=daily_properties.HIGH_TEMPERATURE,
@@ -304,7 +317,9 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=daily_properties_compat.TITLE,
-                value=self._get_localized_string(id=daily_forecast.timestamp.isoweekday() + 10)
+                value=self._get_localized_string(
+                    id=daily_forecast.timestamp.isoweekday() + _KodiMagicValues.MESSAGE_OFFSET_DAY_SHORT
+                )
             )
             self._set_window_property(
                 key=daily_properties_compat.HIGH_TEMP,

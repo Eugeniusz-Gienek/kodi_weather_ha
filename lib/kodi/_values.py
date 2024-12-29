@@ -10,6 +10,11 @@ class _KodiMagicValues:
     ADDON_INFO_NAME_ID = "name"
     REGION_TEMPERATURE_UNIT_ID = "tempunit"
     REGION_WIND_SPEED_UNIT_ID = "speedunit"
+    REGION_TIME_FORMAT_ID = "time"
+    REGION_SHORT_DATE_FORMAT_ID = "dateshort"
+    REGION_LONG_DATE_FORMAT_ID = "datelong"
+    MESSAGE_OFFSET_DAY_SHORT = 10
+    MESSAGE_OFFSET_DAY_LONG = 40
 
 
 class KodiAddonStrings(IntEnum):
