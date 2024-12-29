@@ -78,6 +78,13 @@ class KodiHomeAssistantWeatherPluginAdapter:
     def home_assistant_token(self) -> str:
         return self._get_setting(setting=_HomeAssistantWeatherPluginSettings.HOME_ASSISTANT_TOKEN)
 
+    @property
+    def override_location(self) -> str:
+        if not self._get_setting(setting=_HomeAssistantWeatherPluginSettings.USE_HOME_ASSISTANT_LOCATION_NAME):
+            return self._get_setting(setting=_HomeAssistantWeatherPluginSettings.LOCATION_TITLE)
+        else:
+            return ""
+
     def log(self, message: str, level: KodiLogLevel = KodiLogLevel.DEBUG):
         if self._get_setting(setting=_HomeAssistantWeatherPluginSettings.LOG_ENABLED):
             msg = f"[ HOME ASSISTANT WEATHER ]: {self.__addon_id}: {message}"
@@ -85,7 +92,12 @@ class KodiHomeAssistantWeatherPluginAdapter:
 
     @property
     def required_settings_done(self) -> bool:
-        return bool(self.home_assistant_token) and bool(self.home_assistant_url) and bool(self.home_assistant_entity_forecast) and bool(self.home_assistant_entity_sun)
+        return (
+            bool(self.home_assistant_token)
+            and bool(self.home_assistant_url)
+            and bool(self.home_assistant_entity_forecast)
+            and bool(self.home_assistant_entity_sun)
+        )
 
     def dialog(self, message_id: KodiAddonStrings) -> bool:
         return xbmcgui.Dialog().ok(
@@ -112,7 +124,8 @@ class KodiHomeAssistantWeatherPluginAdapter:
     def set_weather_properties(self, forecast: KodiForecastData) -> None:
         percent = "{:.0f} %".format
         true = "true"
-        self._set_window_property(key=_KodiWeatherProperties.GENERAL.LOCATION_1, value=forecast.General.location)
+        location = self.override_location or forecast.General.location
+        self._set_window_property(key=_KodiWeatherProperties.GENERAL.LOCATION_1, value=location)
         self._set_window_property(key=_KodiWeatherProperties.GENERAL.LOCATIONS, value="1")
         # current
         self._set_window_property(
@@ -350,30 +363,29 @@ class KodiHomeAssistantWeatherPluginAdapter:
                 value=str(daily_forecast.fanart_code)
             )
         # general
-        # TODO: Override location from settings
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.LOCATION,
-            value=forecast.General.location
+            value=location
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.CURRENT_LOCATION,
-            value=forecast.General.location
+            value=location
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.FORECAST_LOCATION,
-            value=forecast.General.location
+            value=location
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.REGIONAL_LOCATION,
-            value=forecast.General.location
+            value=location
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.FORECAST_CITY,
-            value=forecast.General.location
+            value=location
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.FORECAST_COUNTRY,
-            value=forecast.General.location
+            value=location
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.FORECAST_LATITUDE,
