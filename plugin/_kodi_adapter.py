@@ -8,7 +8,9 @@ class _HomeAssistantWeatherPluginSettings(KodiPluginSetting):
     USE_HOME_ASSISTANT_LOCATION_NAME = KodiPluginSetting(setting_id="useHALocName", setting_type=bool)
     HOME_ASSISTANT_SERVER = KodiPluginSetting(setting_id="ha_server", setting_type=str)
     HOME_ASSISTANT_TOKEN = KodiPluginSetting(setting_id="ha_key", setting_type=str)
-    HOME_ASSISTANT_WEATHER_FORECAST_ENTITY_ID = KodiPluginSetting(setting_id="ha_weather_forecast_entity_id", setting_type=str)
+    HOME_ASSISTANT_WEATHER_FORECAST_ENTITY_ID = KodiPluginSetting(
+        setting_id="ha_weather_forecast_entity_id", setting_type=str
+    )
     HOME_ASSISTANT_SUN_ENTITY_ID = KodiPluginSetting(setting_id="ha_sun_entity_id", setting_type=str)
     LOG_ENABLED = KodiPluginSetting(setting_id="logEnabled", setting_type=bool)
 

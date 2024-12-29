@@ -51,7 +51,9 @@ class TestSpeedUnits(unittest.TestCase):
                     self.assertEqual(CONVERT_42SI_TO[unit], unit.from_si_value(SAMPLE).value)
             else:
                 with self.subTest(msg=unit.unit):
-                    self.assertLess(abs(CONVERT_42SI_TO[unit] - unit.from_si_value(SAMPLE).value) / CONVERT_42SI_TO[unit], 1e-4)
+                    self.assertLess(
+                        abs(CONVERT_42SI_TO[unit] - unit.from_si_value(SAMPLE).value) / CONVERT_42SI_TO[unit], 1e-4
+                    )
 
     def test_si_from_unit(self):
         for unit in SpeedUnits.values():

@@ -34,7 +34,9 @@ class TestTemperatureUnits(unittest.TestCase):
     def test_unit_from_si(self):
         for unit in TemperatureUnits.values():
             with self.subTest(msg=unit.unit):
-                self.assertLess(abs(CONVERT_42SI_TO[unit] - unit.from_si_value(SAMPLE).value) / CONVERT_42SI_TO[unit], 1e-3)
+                self.assertLess(
+                    abs(CONVERT_42SI_TO[unit] - unit.from_si_value(SAMPLE).value) / CONVERT_42SI_TO[unit], 1e-3
+                )
 
     def test_si_from_unit(self):
         for unit in TemperatureUnits.values():
