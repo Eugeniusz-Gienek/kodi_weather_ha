@@ -7,15 +7,12 @@ from lib.homeassistant import (
     HomeAssistantWeatherCondition, HomeAssistantForecastMeta, HomeAssistantSunInfo
 )
 from lib.kodi import (
-    KodiHomeAssistantWeatherPluginAdapter, KodiAddonStrings, KodiLogLevel, KodiGeneralForecastData, KodiForecastData,
+    KodiLogLevel, KodiGeneralForecastData, KodiForecastData,
     KodiCurrentForecastData, KodiWindDirectionCode, KodiConditionCode, KodiHourlyForecastData, KodiDailyForecastData
 )
 from lib.unit.speed import SpeedKph, SpeedUnits, Speed
 from lib.unit.temperature import TemperatureUnits, TemperatureCelsius, Temperature
-
-# get settings...
-MAX_REQUEST_RETRIES = 6
-RETRY_DELAY_S = 10
+from lib.weather_plugin_adapter import KodiHomeAssistantWeatherPluginAdapter, HomeAssistantWeatherPluginStrings
 
 
 class KodiHomeAssistantWeatherPlugin:
@@ -23,8 +20,8 @@ class KodiHomeAssistantWeatherPlugin:
         self._kodi_adapter = KodiHomeAssistantWeatherPluginAdapter()
         self._kodi_adapter.log("Home Assistant Weather started.")
 
-        if not self._kodi_adapter.required_settings_done:
-            self._kodi_adapter.dialog(message_id=KodiAddonStrings.SETTINGS_REQUIRED)
+        if not self._kodi_adapter.required_settings_done():
+            self._kodi_adapter.dialog(message_id=HomeAssistantWeatherPluginStrings.SETTINGS_REQUIRED)
             self._kodi_adapter.log("Settings for Home Assistant Weather not yet provided. Plugin will not work.")
         else:
             self.apply_forecast()
@@ -49,11 +46,11 @@ class KodiHomeAssistantWeatherPlugin:
                 message=f"Could not retrieve forecast from Home Assistant: {e.error_code}", level=KodiLogLevel.ERROR
             )
             if e.error_code == 401:
-                message = KodiAddonStrings.HOMEASSISTANT_UNAUTHORIZED
+                message = HomeAssistantWeatherPluginStrings.HOMEASSISTANT_UNAUTHORIZED
             elif e.error_code == -1:
-                message = KodiAddonStrings.HOMEASSISTANT_UNREACHABLE
+                message = HomeAssistantWeatherPluginStrings.HOMEASSISTANT_UNREACHABLE
             else:
-                message = KodiAddonStrings.HOMEASSISTANT_UNEXPECTED_RESPONSE
+                message = HomeAssistantWeatherPluginStrings.HOMEASSISTANT_UNEXPECTED_RESPONSE
             self._kodi_adapter.dialog(message_id=message)
 
     @staticmethod
@@ -113,7 +110,8 @@ class KodiHomeAssistantWeatherPlugin:
         sunset = KodiHomeAssistantWeatherPlugin.__parse_homeassistant_datetime(ha_sun_info.next_setting)
         return KodiForecastData(
             General=KodiGeneralForecastData(
-                location=ha_forecast.current.friendly_name
+                location=self._kodi_adapter.override_location or ha_forecast.current.friendly_name,
+                attribution=ha_forecast.current.attribution,
             ),
             Current=KodiCurrentForecastData(
                 temperature=temperature,

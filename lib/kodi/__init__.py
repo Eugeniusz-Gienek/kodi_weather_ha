@@ -1,6 +1,7 @@
-from ._adapter import KodiHomeAssistantWeatherPluginAdapter
+from ._adapter import KodiWeatherPluginAdapter
 from ._forecast import (
     KodiConditionCode, KodiCurrentForecastData, KodiDailyForecastData, KodiHourlyForecastData, KodiForecastData,
     KodiGeneralForecastData, KodiWindDirectionCode
 )
-from ._values import KodiAddonStrings, KodiLogLevel
+from ._settings import KodiPluginSetting
+from ._values import KodiLogLevel

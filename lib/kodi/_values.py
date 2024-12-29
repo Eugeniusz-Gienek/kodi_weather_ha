@@ -1,4 +1,4 @@
-from enum import IntEnum, Enum
+from enum import Enum
 
 import xbmc
 
@@ -15,14 +15,6 @@ class _KodiMagicValues:
     REGION_LONG_DATE_FORMAT_ID = "datelong"
     MESSAGE_OFFSET_DAY_SHORT = 10
     MESSAGE_OFFSET_DAY_LONG = 40
-
-
-class KodiAddonStrings(IntEnum):
-    SETTINGS_REQUIRED = 30010
-    HOMEASSISTANT_UNAUTHORIZED = 30011
-    HOMEASSISTANT_UNREACHABLE = 30013
-    HOMEASSISTANT_UNEXPECTED_RESPONSE = 30014
-    ADDON_SHORT_NAME = 30200
 
 
 class KodiLogLevel(Enum):

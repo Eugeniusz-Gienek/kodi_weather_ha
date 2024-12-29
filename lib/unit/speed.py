@@ -9,7 +9,7 @@ class Speed(_ValueWithUnit):
     @staticmethod
     @abstractmethod
     def from_si_value(value: float) -> 'Speed ':
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 _feet_per_meter = 3.28084

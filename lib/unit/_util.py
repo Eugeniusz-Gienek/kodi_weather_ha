@@ -12,9 +12,9 @@ class _ValueWithUnit:
 
     @abstractmethod
     def si_value(self) -> float:
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @staticmethod
     @abstractmethod
     def from_si_value(value: float) -> '_ValueWithUnit':
-        raise NotImplementedError
+        raise NotImplementedError()

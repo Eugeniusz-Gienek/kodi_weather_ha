@@ -1,4 +1,5 @@
 import os.path
+from abc import abstractmethod
 from datetime import datetime, UTC
 from typing import Type, Union
 
@@ -10,18 +11,19 @@ import xbmcvfs
 from ._forecast import KodiForecastData, KodiHourlyForecastData, KodiDailyForecastData
 from ._properties import _KodiWeatherProperties, _KodiHourlyWeatherProperties, _KodiDailyWeatherProperties, \
     _KodiDailyWeatherPropertiesCompat
-from ._settings import _HomeAssistantWeatherPluginSetting, _Setting_Type, _HomeAssistantWeatherPluginSettings
-from ._values import _KodiMagicValues, KodiLogLevel, KodiAddonStrings
+from ._settings import KodiPluginSetting, _Setting_Type
+from ._values import _KodiMagicValues, KodiLogLevel
 from ..unit.speed import Speed, SpeedUnits, SpeedKph
 from ..unit.temperature import Temperature, TemperatureUnits, TemperatureCelsius
 
 
-class KodiHomeAssistantWeatherPluginAdapter:
+class KodiWeatherPluginAdapter:
 
     def __init__(self) -> None:
         self._window = xbmcgui.Window(_KodiMagicValues.WEATHER_WINDOW_ID)   # kwargs unsupported
         self._kodi_addon = xbmcaddon.Addon()
         self.__addon_id = self._kodi_addon.getAddonInfo(id=_KodiMagicValues.ADDON_INFO_ADDON_ID)
+        self._allow_logging = False     # override this after construction if needed
 
     @property
     def cwd(self) -> str:
@@ -50,7 +52,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
     def _get_localized_string(self, id: int):
         return self._kodi_addon.getLocalizedString(id=id) or xbmc.getLocalizedString(id=id)
 
-    def _get_setting(self, setting: _HomeAssistantWeatherPluginSetting) -> _Setting_Type:
+    def _get_setting(self, setting: KodiPluginSetting) -> _Setting_Type:
         if setting.setting_type == bool:
             return self._kodi_addon.getSettingBool(id=setting.setting_id)
         elif setting.setting_type == int:
@@ -62,44 +64,15 @@ class KodiHomeAssistantWeatherPluginAdapter:
         else:
             return self._kodi_addon.getSetting(id=setting.setting_id)
 
-    @property
-    def home_assistant_url(self) -> str:
-        return self._get_setting(setting=_HomeAssistantWeatherPluginSettings.HOME_ASSISTANT_SERVER)
-
-    @property
-    def home_assistant_entity_forecast(self) -> str:
-        return self._get_setting(setting=_HomeAssistantWeatherPluginSettings.HOME_ASSISTANT_WEATHER_FORECAST_ENTITY_ID)
-
-    @property
-    def home_assistant_entity_sun(self) -> str:
-        return self._get_setting(setting=_HomeAssistantWeatherPluginSettings.HOME_ASSISTANT_SUN_ENTITY_ID)
-
-    @property
-    def home_assistant_token(self) -> str:
-        return self._get_setting(setting=_HomeAssistantWeatherPluginSettings.HOME_ASSISTANT_TOKEN)
-
-    @property
-    def override_location(self) -> str:
-        if not self._get_setting(setting=_HomeAssistantWeatherPluginSettings.USE_HOME_ASSISTANT_LOCATION_NAME):
-            return self._get_setting(setting=_HomeAssistantWeatherPluginSettings.LOCATION_TITLE)
-        else:
-            return ""
-
     def log(self, message: str, level: KodiLogLevel = KodiLogLevel.DEBUG):
-        if self._get_setting(setting=_HomeAssistantWeatherPluginSettings.LOG_ENABLED):
-            msg = f"[ HOME ASSISTANT WEATHER ]: {self.__addon_id}: {message}"
-            xbmc.log(msg=msg, level=level.value)
+        if self._allow_logging:
+            xbmc.log(msg=f"[{self.__addon_id}] {message}", level=level.value)
 
-    @property
+    @abstractmethod
     def required_settings_done(self) -> bool:
-        return (
-            bool(self.home_assistant_token)
-            and bool(self.home_assistant_url)
-            and bool(self.home_assistant_entity_forecast)
-            and bool(self.home_assistant_entity_sun)
-        )
+        raise NotImplementedError()
 
-    def dialog(self, message_id: KodiAddonStrings) -> bool:
+    def dialog(self, message_id: int) -> bool:
         return xbmcgui.Dialog().ok(
             heading=self._kodi_addon.getAddonInfo(id=_KodiMagicValues.ADDON_INFO_NAME_ID),
             message=self._get_localized_string(id=message_id)
@@ -124,8 +97,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
     def set_weather_properties(self, forecast: KodiForecastData) -> None:
         percent = "{:.0f} %".format
         true = "true"
-        location = self.override_location or forecast.General.location
-        self._set_window_property(key=_KodiWeatherProperties.GENERAL.LOCATION_1, value=location)
+        self._set_window_property(key=_KodiWeatherProperties.GENERAL.LOCATION_1, value=forecast.General.location)
         self._set_window_property(key=_KodiWeatherProperties.GENERAL.LOCATIONS, value="1")
         # current
         self._set_window_property(
@@ -134,7 +106,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.TEMPERATURE,
-            value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+            value=KodiWeatherPluginAdapter.format_unit(
                 TemperatureCelsius.from_si_value(forecast.Current.temperature.si_value())
             )   # converted by Kodi from °C
         )
@@ -152,7 +124,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.WIND,
-            value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+            value=KodiWeatherPluginAdapter.format_unit(
                 SpeedKph.from_si_value(forecast.Current.wind_speed.si_value())
             )   # converted by Kodi from km/h
         )
@@ -166,19 +138,19 @@ class KodiHomeAssistantWeatherPluginAdapter:
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.DEW_POINT,
-            value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+            value=KodiWeatherPluginAdapter.format_unit(
                 TemperatureCelsius.from_si_value(forecast.Current.dew_point.si_value())
             )     # converted by Kodi from °C
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.FEELS_LIKE,
-            value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+            value=KodiWeatherPluginAdapter.format_unit(
                 TemperatureCelsius.from_si_value(forecast.Current.feels_like.si_value())
             )   # converted by Kodi from °C
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.WIND_CHILL,
-            value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+            value=KodiWeatherPluginAdapter.format_unit(
                 self.temperature_unit.from_si_value(forecast.Current.feels_like.si_value())
             )
         )
@@ -236,7 +208,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=hourly_properties.WIND_SPEED,
-                value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                value=KodiWeatherPluginAdapter.format_unit(
                     self.wind_speed_unit.from_si_value(hourly_forecast.wind_speed.si_value())
                 )
             )
@@ -250,19 +222,19 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=hourly_properties.TEMPERATURE,
-                value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                value=KodiWeatherPluginAdapter.format_unit(
                     self.temperature_unit.from_si_value(hourly_forecast.temperature.si_value())
                 )
             )
             self._set_window_property(
                 key=hourly_properties.DEW_POINT,
-                value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                value=KodiWeatherPluginAdapter.format_unit(
                     self.temperature_unit.from_si_value(hourly_forecast.dew_point.si_value())
                 )
             )
             self._set_window_property(
                 key=hourly_properties.FEELS_LIKE,
-                value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                value=KodiWeatherPluginAdapter.format_unit(
                     self.temperature_unit.from_si_value(hourly_forecast.feels_like.si_value())
                 )
             )
@@ -296,13 +268,13 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=daily_properties.HIGH_TEMPERATURE,
-                value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                value=KodiWeatherPluginAdapter.format_unit(
                     self.temperature_unit.from_si_value(daily_forecast.temperature.si_value())
                 )
             )
             self._set_window_property(
                 key=daily_properties.LOW_TEMPERATURE,
-                value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                value=KodiWeatherPluginAdapter.format_unit(
                     self.temperature_unit.from_si_value(daily_forecast.low_temperature.si_value())
                 )
             )
@@ -320,7 +292,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=daily_properties.WIND_SPEED,
-                value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                value=KodiWeatherPluginAdapter.format_unit(
                     self.wind_speed_unit.from_si_value(daily_forecast.wind_speed.si_value())
                 )
             )
@@ -340,13 +312,13 @@ class KodiHomeAssistantWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=daily_properties_compat.HIGH_TEMP,
-                value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                value=KodiWeatherPluginAdapter.format_unit(
                     TemperatureCelsius.from_si_value(daily_forecast.temperature.si_value())
                 )   # converted by skins from °C
             )
             self._set_window_property(
                 key=daily_properties_compat.LOW_TEMP,
-                value=KodiHomeAssistantWeatherPluginAdapter.format_unit(
+                value=KodiWeatherPluginAdapter.format_unit(
                     TemperatureCelsius.from_si_value(daily_forecast.low_temperature.si_value())
                 )   # converted by skins from °C
             )
@@ -365,27 +337,27 @@ class KodiHomeAssistantWeatherPluginAdapter:
         # general
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.LOCATION,
-            value=location
+            value=forecast.General.location
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.CURRENT_LOCATION,
-            value=location
+            value=forecast.General.location
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.FORECAST_LOCATION,
-            value=location
+            value=forecast.General.location
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.REGIONAL_LOCATION,
-            value=location
+            value=forecast.General.location
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.FORECAST_CITY,
-            value=location
+            value=forecast.General.location
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.FORECAST_COUNTRY,
-            value=location
+            value=forecast.General.location
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.FORECAST_LATITUDE,
@@ -409,7 +381,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.WEATHER_PROVIDER,
-            value=self._get_localized_string(id=KodiAddonStrings.ADDON_SHORT_NAME)
+            value=forecast.General.attribution
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.WEATHER_PROVIDER_LOGO,

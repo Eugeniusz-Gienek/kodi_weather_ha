@@ -9,7 +9,7 @@ class Temperature(_ValueWithUnit):
     @staticmethod
     @abstractmethod
     def from_si_value(value: float) -> 'Temperature':
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 # Conversions see https://en.wikipedia.org/wiki/Conversion_of_scales_of_temperature

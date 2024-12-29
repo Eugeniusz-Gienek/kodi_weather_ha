@@ -158,6 +158,7 @@ class _KodiFutureForecastCommon:
 @dataclass
 class KodiGeneralForecastData:
     location: str
+    attribution: str
 
 
 @dataclass
