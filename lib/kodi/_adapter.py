@@ -94,7 +94,6 @@ class KodiHomeAssistantWeatherPluginAdapter:
         return (value_format + " {}").format(unit.value, unit.unit)
 
     def set_weather_properties(self, forecast: KodiForecastData) -> None:
-        # TODO: Fanart icon partly-cloudy at night
         # TODO: Format dates and times as per Kodi's locale
         percent = "{:.0f} %".format
         true = "true"

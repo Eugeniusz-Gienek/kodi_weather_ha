@@ -57,10 +57,12 @@ class KodiHomeAssistantWeatherPlugin:
 
     @staticmethod
     def __translate_hourly_ha_forecast_to_kodi_forecast(
-            ha_forecast: HomeAssistantHourlyForecast, forecast_meta: HomeAssistantForecastMeta
+            ha_forecast: HomeAssistantHourlyForecast, forecast_meta: HomeAssistantForecastMeta,
+            sunset: datetime, sunrise: datetime
     ) -> KodiHourlyForecastData:
         temperature = TemperatureUnits[forecast_meta.temperature_unit](ha_forecast.temperature)
         wind_speed = SpeedUnits[forecast_meta.wind_speed_unit](ha_forecast.wind_speed)
+        timestamp = KodiHomeAssistantWeatherPlugin.__parse_homeassistant_datetime(datetime_str=ha_forecast.datetime)
         return KodiHourlyForecastData(
             temperature=temperature,
             wind_speed=wind_speed,
@@ -78,9 +80,9 @@ class KodiHomeAssistantWeatherPlugin:
                 humidity_percent=ha_forecast.humidity
             ),
             condition=KodiHomeAssistantWeatherPlugin.__translate_condition(
-                ha_condition=ha_forecast.condition
+                ha_condition=ha_forecast.condition, is_night=not (sunrise.time() < timestamp.time() < sunset.time())
             ),
-            timestamp=KodiHomeAssistantWeatherPlugin.__parse_homeassistant_datetime(datetime_str=ha_forecast.datetime),
+            timestamp=timestamp,
             pressure="",
         )
 
@@ -106,6 +108,8 @@ class KodiHomeAssistantWeatherPlugin:
             self, ha_forecast: HomeAssistantForecast, ha_sun_info: HomeAssistantSunInfo) -> KodiForecastData:
         temperature = TemperatureUnits[ha_forecast.current.temperature_unit](ha_forecast.current.temperature)
         wind_speed = SpeedUnits[ha_forecast.current.wind_speed_unit](ha_forecast.current.wind_speed)
+        sunrise = KodiHomeAssistantWeatherPlugin.__parse_homeassistant_datetime(ha_sun_info.next_rising)
+        sunset = KodiHomeAssistantWeatherPlugin.__parse_homeassistant_datetime(ha_sun_info.next_setting)
         return KodiForecastData(
             General=KodiGeneralForecastData(
                 location=ha_forecast.current.friendly_name
@@ -120,6 +124,7 @@ class KodiHomeAssistantWeatherPlugin:
                 ),                                              # conversion not implemented in Kodi
                 condition=KodiHomeAssistantWeatherPlugin.__translate_condition(
                     ha_condition=ha_forecast.hourly[0].condition if len(ha_forecast.hourly) > 0 else None,
+                    is_night=not (sunrise.time() < datetime.now().time() < sunset.time())
                 ),
                 humidity=ha_forecast.current.humidity,
                 feels_like=KodiHomeAssistantWeatherPlugin.__calculate_feels_like(
@@ -135,13 +140,15 @@ class KodiHomeAssistantWeatherPlugin:
                 pressure=KodiHomeAssistantWeatherPlugin.__format_pressure(
                     pressure=ha_forecast.current.pressure, pressure_unit=ha_forecast.current.pressure_unit
                 ),
-                sunrise=KodiHomeAssistantWeatherPlugin.__parse_homeassistant_datetime(ha_sun_info.next_rising),
-                sunset=KodiHomeAssistantWeatherPlugin.__parse_homeassistant_datetime(ha_sun_info.next_setting),
+                sunrise=sunrise,
+                sunset=sunset,
             ),
             HourlyForecasts=[
                 self.__translate_hourly_ha_forecast_to_kodi_forecast(
                     ha_forecast=hourly_forecast,
-                    forecast_meta=ha_forecast.current
+                    forecast_meta=ha_forecast.current,
+                    sunrise=sunrise,
+                    sunset=sunset,
                 )
                 for hourly_forecast in ha_forecast.hourly
             ],
@@ -183,13 +190,14 @@ class KodiHomeAssistantWeatherPlugin:
 
     @staticmethod
     def __translate_condition(
-            ha_condition: Union[HomeAssistantWeatherCondition, None]) -> Union[KodiConditionCode, None]:
+            ha_condition: Union[HomeAssistantWeatherCondition, None], is_night: bool = False
+    ) -> Union[KodiConditionCode, None]:
         if ha_condition is None:
             return None
         elif ha_condition == HomeAssistantWeatherCondition.CLEAR_NIGHT.value:
             return KodiConditionCode.CLEAR_NIGHT
         elif ha_condition == HomeAssistantWeatherCondition.CLOUDY.value:
-            return KodiConditionCode.CLOUDY
+            return KodiConditionCode.CLOUDY if not is_night else KodiConditionCode.MOSTLY_CLOUDY_NIGHT
         elif ha_condition == HomeAssistantWeatherCondition.FOG.value:
             return KodiConditionCode.FOGGY
         elif ha_condition == HomeAssistantWeatherCondition.HAIL.value:
@@ -199,7 +207,7 @@ class KodiHomeAssistantWeatherPlugin:
         elif ha_condition == HomeAssistantWeatherCondition.LIGHTNING_RAINY.value:
             return KodiConditionCode.THUNDERSHOWERS
         elif ha_condition == HomeAssistantWeatherCondition.PARTLY_CLOUDY.value:
-            return KodiConditionCode.PARTLY_CLOUDY
+            return KodiConditionCode.PARTLY_CLOUDY if not is_night else KodiConditionCode.PARTLY_CLOUDY_NIGHT
         elif ha_condition == HomeAssistantWeatherCondition.POURING.value:
             return KodiConditionCode.SHOWERS_2
         elif ha_condition == HomeAssistantWeatherCondition.RAINY.value:
