@@ -17,5 +17,3 @@ class _HomeAssistantWeatherPluginSettings(_HomeAssistantWeatherPluginSetting):
     HOME_ASSISTANT_TOKEN = _HomeAssistantWeatherPluginSetting(setting_id="ha_key", setting_type=str)
     HOME_ASSISTANT_WEATHER_FORECAST_ENTITY_ID = _HomeAssistantWeatherPluginSetting(setting_id="ha_weather_forecast_entity_id", setting_type=str)
     LOG_ENABLED = _HomeAssistantWeatherPluginSetting(setting_id="logEnabled", setting_type=bool)
-    # TODO: Is this necessary?
-    LOCATION_1 = _HomeAssistantWeatherPluginSetting(setting_id="location1", setting_type=str)
