@@ -16,4 +16,5 @@ class _HomeAssistantWeatherPluginSettings(_HomeAssistantWeatherPluginSetting):
     HOME_ASSISTANT_SERVER = _HomeAssistantWeatherPluginSetting(setting_id="ha_server", setting_type=str)
     HOME_ASSISTANT_TOKEN = _HomeAssistantWeatherPluginSetting(setting_id="ha_key", setting_type=str)
     HOME_ASSISTANT_WEATHER_FORECAST_ENTITY_ID = _HomeAssistantWeatherPluginSetting(setting_id="ha_weather_forecast_entity_id", setting_type=str)
+    HOME_ASSISTANT_SUN_ENTITY_ID = _HomeAssistantWeatherPluginSetting(setting_id="ha_sun_entity_id", setting_type=str)
     LOG_ENABLED = _HomeAssistantWeatherPluginSetting(setting_id="logEnabled", setting_type=bool)

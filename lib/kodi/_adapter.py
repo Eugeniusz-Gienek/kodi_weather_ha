@@ -67,8 +67,12 @@ class KodiHomeAssistantWeatherPluginAdapter:
         return self._get_setting(setting=_HomeAssistantWeatherPluginSettings.HOME_ASSISTANT_SERVER)
 
     @property
-    def home_assistant_entity(self) -> str:
+    def home_assistant_entity_forecast(self) -> str:
         return self._get_setting(setting=_HomeAssistantWeatherPluginSettings.HOME_ASSISTANT_WEATHER_FORECAST_ENTITY_ID)
+
+    @property
+    def home_assistant_entity_sun(self) -> str:
+        return self._get_setting(setting=_HomeAssistantWeatherPluginSettings.HOME_ASSISTANT_SUN_ENTITY_ID)
 
     @property
     def home_assistant_token(self) -> str:
@@ -81,7 +85,7 @@ class KodiHomeAssistantWeatherPluginAdapter:
 
     @property
     def required_settings_done(self) -> bool:
-        return bool(self.home_assistant_token) and bool(self.home_assistant_url) and bool(self.home_assistant_entity)
+        return bool(self.home_assistant_token) and bool(self.home_assistant_url) and bool(self.home_assistant_entity_forecast) and bool(self.home_assistant_entity_sun)
 
     def dialog(self, message_id: KodiAddonStrings) -> bool:
         return xbmcgui.Dialog().ok(

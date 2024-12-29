@@ -35,11 +35,12 @@ class KodiHomeAssistantWeatherPlugin:
             return (
                 HomeAssistantAdapter.get_forecast(
                     server_url=self._kodi_adapter.home_assistant_url,
-                    entity_id=self._kodi_adapter.home_assistant_entity,
+                    entity_id=self._kodi_adapter.home_assistant_entity_forecast,
                     token=self._kodi_adapter.home_assistant_token
                 ),
                 HomeAssistantAdapter.get_sun_info(
                     server_url=self._kodi_adapter.home_assistant_url,
+                    entity_id=self._kodi_adapter.home_assistant_entity_sun,
                     token=self._kodi_adapter.home_assistant_token
                 )
             )

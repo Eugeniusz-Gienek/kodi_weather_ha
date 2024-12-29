@@ -58,8 +58,8 @@ class HomeAssistantAdapter:
         )
 
     @staticmethod
-    def get_sun_info(server_url: str, token: str) -> HomeAssistantSunInfo:
-        sun_url = urllib.parse.urljoin(base=server_url, url=f"/api/states/sun.sun")
+    def get_sun_info(server_url: str, entity_id: str, token: str) -> HomeAssistantSunInfo:
+        sun_url = urllib.parse.urljoin(base=server_url, url=f"/api/states/{entity_id}")
         sun = HomeAssistantAdapter.__request(url=sun_url, token=token)
         sun_data = sun.json()
         return HomeAssistantSunInfo(**sun_data["attributes"], state=HomeAssistantSunState(sun_data["state"]))
