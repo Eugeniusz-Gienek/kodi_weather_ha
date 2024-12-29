@@ -7,8 +7,8 @@ msgstr ""
 "Project-Id-Version: Kodi add-ons\n"
 "Report-Msgid-Bugs-To: translations@kodi.tv\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2024-04-15 19:30+1000\n"
-"Last-Translator: Eugeniusz Gienek <-@-.pl>\n"
+"PO-Revision-Date: 2024-12-24 01:35+0100\n"
+"Last-Translator: Konstantin Koehring <-@-.pl>\n"
 "Language-Team: British <https://kodi.weblate.cloud/projects/kodi-add-ons-weather/weather-ha/en_gb/>\n"
 "Language: en_gb\n"
 "MIME-Version: 1.0\n"
@@ -38,19 +38,11 @@ msgid "Home Assistant Long Live Token"
 msgstr ""
 
 msgctxt "#30004"
-msgid "Home Assistant Weather REST API url for current forecast (e.g. /api/...)"
+msgid "Home Assistant Weather Forecast Entity ID"
 msgstr ""
 
 msgctxt "#30005"
-msgid "Home Assistant Weather REST API data for current URL (JSON)"
-msgstr ""
-
-msgctxt "#30006"
-msgid "Home Assistant Weather REST API url for daily forecast (e.g. /api/....)"
-msgstr ""
-
-msgctxt "#30007"
-msgid "Home Assistant Weather REST API data for daily URL (JSON)"
+msgid "Home Assistant Sun Entity ID"
 msgstr ""
 
 msgctxt "#30008"
@@ -69,28 +61,12 @@ msgctxt "#30011"
 msgid "Please check your token - it seems to be not accepted."
 msgstr ""
 
-msgctxt "#30012"
-msgid "Error received - method not allowed. That's weird."
-msgstr ""
-
 msgctxt "#30013"
 msgid "Some unknown error happened. Please check IP address or if server is even online."
 msgstr ""
 
 msgctxt "#30014"
 msgid "Unexpected response from Home Assistant weather server. This is an error."
-msgstr ""
-
-msgctxt "#30015"
-msgid "Home Assistant Weather REST API url for hourly forecast (e.g. /api/...)"
-msgstr ""
-
-msgctxt "#30016"
-msgid "Home Assistant Weather REST API data for hourly URL (JSON)"
-msgstr ""
-
-msgctxt "#30017"
-msgid "Method"
 msgstr ""
 
 msgctxt "#30018"
@@ -105,198 +81,6 @@ msgctxt "#30020"
 msgid "Use HA location name"
 msgstr ""
 
-msgctxt "#30099"
-msgid "unknown"
-msgstr ""
-
-msgctxt "#30100"
-msgid "tornado"
-msgstr ""
-
-msgctxt "#30101"
-msgid "tropical-storm"
-msgstr ""
-
-msgctxt "#30102"
-msgid "hurricane"
-msgstr ""
-
-msgctxt "#30103"
-msgid "lightning-rainy"
-msgstr ""
-
-msgctxt "#30104"
-msgid "lightning"
-msgstr ""
-
-msgctxt "#30105"
-msgid "snowy-rainy"
-msgstr ""
-
-msgctxt "#30106"
-msgid "mixed-rain-and-sleet"
-msgstr ""
-
-msgctxt "#30107"
-msgid "mixed-snow-and-sleet"
-msgstr ""
-
-msgctxt "#30108"
-msgid "freezing-drizzle"
-msgstr ""
-
-msgctxt "#30109"
-msgid "drizzle"
-msgstr ""
-
-msgctxt "#30110"
-msgid "freezing-rain"
-msgstr ""
-
-msgctxt "#30111"
-msgid "pouring"
-msgstr ""
-
-msgctxt "#30112"
-msgid "rainy"
-msgstr ""
-
-msgctxt "#30113"
-msgid "snow-flurries"
-msgstr ""
-
-msgctxt "#30114"
-msgid "light-snow-showers"
-msgstr ""
-
-msgctxt "#30115"
-msgid "blowing-snow"
-msgstr ""
-
-msgctxt "#30116"
-msgid "snowy"
-msgstr ""
-
-msgctxt "#30117"
-msgid "hail"
-msgstr ""
-
-msgctxt "#30118"
-msgid "sleet"
-msgstr ""
-
-msgctxt "#30119"
-msgid "dust"
-msgstr ""
-
-msgctxt "#30120"
-msgid "fog"
-msgstr ""
-
-msgctxt "#30121"
-msgid "haze"
-msgstr ""
-
-msgctxt "#30122"
-msgid "smoky"
-msgstr ""
-
-msgctxt "#30123"
-msgid "blustery"
-msgstr ""
-
-msgctxt "#30124"
-msgid "windy"
-msgstr ""
-
-msgctxt "#30125"
-msgid "cold"
-msgstr ""
-
-msgctxt "#30126"
-msgid "cloudy"
-msgstr ""
-
-msgctxt "#30127"
-msgid "mostly-cloudy-night"
-msgstr ""
-
-msgctxt "#30128"
-msgid "mostly-cloudy-day"
-msgstr ""
-
-msgctxt "#30129"
-msgid "partly-cloudy-night"
-msgstr ""
-
-msgctxt "#30130"
-msgid "partly-cloudy-day"
-msgstr ""
-
-msgctxt "#30131"
-msgid "clear-night"
-msgstr ""
-
-msgctxt "#30132"
-msgid "sunny"
-msgstr ""
-
-msgctxt "#30133"
-msgid "fair-night"
-msgstr ""
-
-msgctxt "#30134"
-msgid "fair-day"
-msgstr ""
-
-msgctxt "#30135"
-msgid "mixed-rain-and-hail"
-msgstr ""
-
-msgctxt "#30136"
-msgid "hot"
-msgstr ""
-
-msgctxt "#30137"
-msgid "isolated-thunderstorms"
-msgstr ""
-
-msgctxt "#30138"
-msgid "scattered-thunderstorms"
-msgstr ""
-
-msgctxt "#30139"
-msgid "scattered-thunderstorms2"
-msgstr ""
-
-msgctxt "#30140"
-msgid "scattered-showers"
-msgstr ""
-
-msgctxt "#30141"
-msgid "heavy-snow"
-msgstr ""
-
-msgctxt "#30142"
-msgid "scattered-snow-showers"
-msgstr ""
-
-msgctxt "#30143"
-msgid "heavy-snow"
-msgstr ""
-
-msgctxt "#30144"
-msgid "partlycloudy"
-msgstr ""
-
-msgctxt "#30145"
-msgid "thundershowers"
-msgstr ""
-
-msgctxt "#30146"
-msgid "snow-showers"
-msgstr ""
-
-msgctxt "#30147"
-msgid "isolated-thundershowers"
+msgctxt "#30200"
+msgid "Home Assistant Weather"
 msgstr ""
