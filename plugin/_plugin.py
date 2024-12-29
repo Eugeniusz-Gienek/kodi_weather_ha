@@ -2,8 +2,8 @@ from typing import Tuple
 
 from lib.homeassistant import HomeAssistantAdapter, RequestError, HomeAssistantForecast, HomeAssistantSunInfo
 from lib.kodi import KodiLogLevel
-from lib.util.forecast_converter import ForecastConverter
-from ._adapter import _KodiHomeAssistantWeatherPluginAdapter, _HomeAssistantWeatherPluginStrings
+from .util.forecast_converter import ForecastConverter
+from ._kodi_adapter import _KodiHomeAssistantWeatherPluginAdapter, _HomeAssistantWeatherPluginStrings
 
 
 class KodiHomeAssistantWeatherPlugin:
