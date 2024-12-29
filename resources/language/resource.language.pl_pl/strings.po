@@ -39,11 +39,11 @@ msgstr "Home Assistant Long Live Token"
 
 msgctxt "#30004"
 msgid "Home Assistant Weather Forecast Entity ID"
-msgstr ""  # TODO
+msgstr "Identyfikator jednostki prognozy pogody Home Assistant"
 
 msgctxt "#30005"
 msgid "Home Assistant Sun Entity ID"
-msgstr ""   # TODO
+msgstr "Identyfikator jednostki słońca Home Assistant"
 
 msgctxt "#30008"
 msgid "Debug"
