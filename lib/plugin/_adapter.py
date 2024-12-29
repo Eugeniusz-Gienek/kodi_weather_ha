@@ -13,7 +13,7 @@ class _HomeAssistantWeatherPluginSettings(KodiPluginSetting):
     LOG_ENABLED = KodiPluginSetting(setting_id="logEnabled", setting_type=bool)
 
 
-class HomeAssistantWeatherPluginStrings(IntEnum):
+class _HomeAssistantWeatherPluginStrings(IntEnum):
     SETTINGS_REQUIRED = 30010
     HOMEASSISTANT_UNAUTHORIZED = 30011
     HOMEASSISTANT_UNREACHABLE = 30013
@@ -21,7 +21,7 @@ class HomeAssistantWeatherPluginStrings(IntEnum):
     ADDON_SHORT_NAME = 30200
 
 
-class KodiHomeAssistantWeatherPluginAdapter(KodiWeatherPluginAdapter):
+class _KodiHomeAssistantWeatherPluginAdapter(KodiWeatherPluginAdapter):
     def __init__(self) -> None:
         super().__init__()
         self._allow_logging = self._get_setting(setting=_HomeAssistantWeatherPluginSettings.LOG_ENABLED)

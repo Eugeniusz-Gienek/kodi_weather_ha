@@ -1,4 +1,4 @@
-from lib.ha_weather import KodiHomeAssistantWeatherPlugin
+from lib.plugin import KodiHomeAssistantWeatherPlugin
 
 if __name__ == '__main__':
     KodiHomeAssistantWeatherPlugin()
