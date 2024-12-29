@@ -24,7 +24,7 @@ class TemperatureCelsius(Temperature):
         return TemperatureCelsius(value - 273.15)
 
 
-class TemperatureFahrenheit(TemperatureCelsius):
+class TemperatureFahrenheit(Temperature):
     unit = "°F"
 
     def si_value(self) -> float:
@@ -46,7 +46,7 @@ class TemperatureKelvin(Temperature):
         return TemperatureKelvin(value)
 
 
-class TemperatureRankine(TemperatureCelsius):
+class TemperatureRankine(Temperature):
     unit = "°Ra"
 
     def si_value(self) -> float:
