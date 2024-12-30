@@ -83,7 +83,42 @@ class KodiWindDirectionCode(IntEnum):
 
     @staticmethod
     def from_bearing(bearing: float):
-        if bearing >= 349 or bearing <= 11:
+        if isinstance(bearing, str):
+             bearing=bearing.upper()
+             if bearing == 'N':
+                 return KodiWindDirectionCode.N
+             elif bearing == 'NNE':
+                 return KodiWindDirectionCode.NNE
+
+             elif bearing == 'NE':
+                 return KodiWindDirectionCode.NE
+             elif bearing == 'ENE':
+                 return KodiWindDirectionCode.ENE
+             elif bearing == 'E':
+                 return KodiWindDirectionCode.E
+             elif bearing == 'ESE':
+                 return KodiWindDirectionCode.ESE
+             elif bearing == 'SE':
+                 return KodiWindDirectionCode.SE
+             elif bearing == 'SSE':
+                 return KodiWindDirectionCode.SSE
+             elif bearing == 'S':
+                 return KodiWindDirectionCode.S
+             elif bearing == 'SSW':
+                 return KodiWindDirectionCode.SSW
+             elif bearing == 'SW':
+                 return KodiWindDirectionCode.SW
+             elif bearing == 'WSW':
+                 return KodiWindDirectionCode.WSW
+             elif bearing == 'W':
+                 return KodiWindDirectionCode.W
+             elif bearing == 'WNW':
+                 return KodiWindDirectionCode.WNW
+             elif bearing == 'NW':
+                 return KodiWindDirectionCode.NW
+             elif bearing == 'NNW':
+                 return KodiWindDirectionCode.NNW
+        elif bearing >= 349 or bearing <= 11:
             return KodiWindDirectionCode.N
         elif 12 <= bearing <= 33:
             return KodiWindDirectionCode.NNE

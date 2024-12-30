@@ -17,11 +17,11 @@ class TemperatureCelsius(Temperature):
     unit = "°C"
 
     def si_value(self) -> float:
-        return self.value + 273.15
+        return (self.value if self.value is not None else 0) + 273.15
 
     @staticmethod
     def from_si_value(value: float) -> 'TemperatureCelsius':
-        return TemperatureCelsius(value - 273.15)
+        return TemperatureCelsius((value if value is not None else 0) - 273.15)
 
 
 class TemperatureFahrenheit(Temperature):

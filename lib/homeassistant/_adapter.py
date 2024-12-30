@@ -36,6 +36,59 @@ class HomeAssistantAdapter:
         return r
 
     @staticmethod
+    def filter_attributes(attributes_received,forecast_type='current'):
+        output_attributes = {}
+        allowed_keys = [
+            'temperature',
+            'dew_point',
+            'temperature_unit',
+            'humidity',
+            'uv_index',
+            'pressure',
+            'pressure_unit',
+            'wind_bearing',
+            'wind_speed',
+            'wind_speed_unit',
+            'precipitation_unit',
+            'supported_features',
+            'visibility_unit',
+            'attribution',
+            'friendly_name',
+            'cloud_coverage'
+        ]
+        if forecast_type == 'hourly':
+            allowed_keys = [
+                'temperature',
+                'humidity',
+                'uv_index',
+                'wind_bearing',
+                'wind_speed',
+                'cloud_coverage',
+                'condition',
+                'datetime',
+                'precipitation',
+            ]
+        elif forecast_type == 'daily':
+            allowed_keys = [
+                'temperature',
+                'humidity',
+                'uv_index',
+                'wind_bearing',
+                'wind_speed',
+                'condition',
+                'datetime',
+                'precipitation',
+                'templow',
+            ]
+        for key in attributes_received:
+            if key in allowed_keys:
+                output_attributes[key] = attributes_received[key]
+        for key in allowed_keys:
+            if not key in output_attributes:
+                output_attributes[key] = None
+        return output_attributes
+
+    @staticmethod
     def get_forecast(server_url: str, entity_id: str, token: str) -> HomeAssistantForecast:
         current_url = urllib.parse.urljoin(base=server_url, url=f"/api/states/{entity_id}")
         forecast_url = urllib.parse.urljoin(base=server_url, url="/api/services/weather/get_forecasts")
@@ -46,15 +99,18 @@ class HomeAssistantAdapter:
         daily = HomeAssistantAdapter.__request(
             url=forecast_url, token=token, post=True, data={"entity_id": entity_id, "type": "daily"}
         )
+        current_forecast_attributes = HomeAssistantAdapter.filter_attributes(current.json()["attributes"], 'current')
+        hourly_forecast_attributes = [HomeAssistantAdapter.filter_attributes(hourly_forecast, 'hourly') for hourly_forecast in hourly.json()["service_response"][entity_id]["forecast"]]
+        daily_forecast_attributes = [HomeAssistantAdapter.filter_attributes(daily_forecast, 'daily') for daily_forecast in daily.json()["service_response"][entity_id]["forecast"]]
         return HomeAssistantForecast(
-            current=HomeAssistantCurrentForecast(**current.json()["attributes"]),
+            current=HomeAssistantCurrentForecast(**current_forecast_attributes),
             hourly=[
                 HomeAssistantHourlyForecast(**hourly_forecast)
-                for hourly_forecast in hourly.json()["service_response"][entity_id]["forecast"]
+                for hourly_forecast in hourly_forecast_attributes
             ],
             daily=[
                 HomeAssistantDailyForecast(**daily_forecast)
-                for daily_forecast in daily.json()["service_response"][entity_id]["forecast"]
+                for daily_forecast in daily_forecast_attributes
             ],
         )
 

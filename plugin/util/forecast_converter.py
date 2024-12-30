@@ -97,10 +97,10 @@ class ForecastConverter:
                     temperature=temperature,
                     humidity_percent=ha_forecast.current.humidity
                 ),
-                uv_index=int(ha_forecast.current.uv_index),
-                cloudiness=int(ha_forecast.current.cloud_coverage),
+                uv_index=int(ha_forecast.current.uv_index if ha_forecast.current.uv_index != None else 0),
+                cloudiness=int(ha_forecast.current.cloud_coverage if ha_forecast.current.cloud_coverage != None else 0),
                 pressure=ForecastConverter.__format_pressure(
-                    pressure=ha_forecast.current.pressure, pressure_unit=ha_forecast.current.pressure_unit
+                    pressure=ha_forecast.current.pressure if ha_forecast.current.pressure != None else 0, pressure_unit=ha_forecast.current.pressure_unit
                 ),
                 sunrise=sunrise,
                 sunset=sunset,
