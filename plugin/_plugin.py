@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Union
 
 from lib.homeassistant import HomeAssistantAdapter, RequestError, HomeAssistantForecast, HomeAssistantSunInfo
 from lib.kodi import KodiLogLevel
@@ -18,7 +18,8 @@ class KodiHomeAssistantWeatherPlugin:
             self.apply_forecast()
         self._kodi_adapter.log("Home Assistant Weather init finished.")
 
-    def _get_forecast_handling_errors(self) -> Tuple[HomeAssistantForecast, HomeAssistantSunInfo]:
+    def _get_forecast_handling_errors(self) \
+            -> Tuple[Union[HomeAssistantForecast, None], Union[HomeAssistantSunInfo, None]]:
         try:
             return (
                 HomeAssistantAdapter.get_forecast(
@@ -43,6 +44,7 @@ class KodiHomeAssistantWeatherPlugin:
             else:
                 message = _HomeAssistantWeatherPluginStrings.HOMEASSISTANT_UNEXPECTED_RESPONSE
             self._kodi_adapter.dialog(message_id=message)
+            return None, None
 
     def apply_forecast(self):
         forecast, sun_info = self._get_forecast_handling_errors()

@@ -1,6 +1,6 @@
 import os.path
 from abc import abstractmethod
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from typing import Type, Union
 
 import xbmc
@@ -372,11 +372,11 @@ class KodiWeatherPluginAdapter:
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.FORECAST_UPDATED,
-            value=datetime.now(tz=UTC).isoformat()
+            value=datetime.now(tz=timezone.utc).isoformat()
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.UPDATED,
-            value=datetime.now(tz=UTC).isoformat()
+            value=datetime.now(tz=timezone.utc).isoformat()
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.WEATHER_PROVIDER,

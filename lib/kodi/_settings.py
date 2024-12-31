@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import Type
+from typing import Type, Union
 
-_Setting_Type = bool | int | float | str
+_Setting_Type = Union[bool, int, float, str]
 
 
 @dataclass
