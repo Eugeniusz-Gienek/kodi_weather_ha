@@ -84,3 +84,7 @@ msgstr ""
 msgctxt "#30200"
 msgid "Home Assistant Weather"
 msgstr ""
+
+msgctxt "#30201"
+msgid "Check SSL certificate"
+msgstr ""

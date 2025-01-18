@@ -18,16 +18,16 @@ class HomeAssistantAdapter:
 
     @staticmethod
     def __request(url: str, token: str, post: bool = False,
-                  data: Union[Dict[str, str], None] = None) -> requests.Response:
+                  data: Union[Dict[str, str], None] = None, check_ssl = True) -> requests.Response:
         try:
             if post:
                 r = requests.post(
                     url=url, headers=HomeAssistantAdapter.__make_headers_from_token(token=token), json=data,
-                    params={"return_response": True}
+                    params={"return_response": True}, verify=check_ssl
                 )
             else:
                 r = requests.get(
-                    url=url, headers=HomeAssistantAdapter.__make_headers_from_token(token=token), params=data
+                    url=url, headers=HomeAssistantAdapter.__make_headers_from_token(token=token), params=data, verify=check_ssl
                 )
         except RequestException:
             raise RequestError(error_code=-1, url=url, method="POST" if post else "GET", body="")
@@ -89,15 +89,15 @@ class HomeAssistantAdapter:
         return output_attributes
 
     @staticmethod
-    def get_forecast(server_url: str, entity_id: str, token: str) -> HomeAssistantForecast:
+    def get_forecast(server_url: str, entity_id: str, token: str, check_ssl: bool) -> HomeAssistantForecast:
         current_url = urllib.parse.urljoin(base=server_url, url=f"/api/states/{entity_id}")
         forecast_url = urllib.parse.urljoin(base=server_url, url="/api/services/weather/get_forecasts")
-        current = HomeAssistantAdapter.__request(url=current_url, token=token)
+        current = HomeAssistantAdapter.__request(url=current_url, token=token, check_ssl=check_ssl)
         hourly = HomeAssistantAdapter.__request(
-            url=forecast_url, token=token, post=True, data={"entity_id": entity_id, "type": "hourly"}
+            url=forecast_url, token=token, post=True, data={"entity_id": entity_id, "type": "hourly"}, check_ssl=check_ssl
         )
         daily = HomeAssistantAdapter.__request(
-            url=forecast_url, token=token, post=True, data={"entity_id": entity_id, "type": "daily"}
+            url=forecast_url, token=token, post=True, data={"entity_id": entity_id, "type": "daily"}, check_ssl=check_ssl
         )
         current_forecast_attributes = HomeAssistantAdapter.filter_attributes(current.json()["attributes"], 'current')
         hourly_forecast_attributes = [HomeAssistantAdapter.filter_attributes(hourly_forecast, 'hourly') for hourly_forecast in hourly.json()["service_response"][entity_id]["forecast"]]
@@ -115,8 +115,8 @@ class HomeAssistantAdapter:
         )
 
     @staticmethod
-    def get_sun_info(server_url: str, entity_id: str, token: str) -> HomeAssistantSunInfo:
+    def get_sun_info(server_url: str, entity_id: str, token: str, check_ssl: bool) -> HomeAssistantSunInfo:
         sun_url = urllib.parse.urljoin(base=server_url, url=f"/api/states/{entity_id}")
-        sun = HomeAssistantAdapter.__request(url=sun_url, token=token)
+        sun = HomeAssistantAdapter.__request(url=sun_url, token=token, check_ssl=check_ssl)
         sun_data = sun.json()
         return HomeAssistantSunInfo(**sun_data["attributes"], state=HomeAssistantSunState(sun_data["state"]))

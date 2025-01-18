@@ -25,12 +25,14 @@ class KodiHomeAssistantWeatherPlugin:
                 HomeAssistantAdapter.get_forecast(
                     server_url=self._kodi_adapter.home_assistant_url,
                     entity_id=self._kodi_adapter.home_assistant_entity_forecast,
-                    token=self._kodi_adapter.home_assistant_token
+                    token=self._kodi_adapter.home_assistant_token,
+                    check_ssl=self._kodi_adapter.get_check_ssl
                 ),
                 HomeAssistantAdapter.get_sun_info(
                     server_url=self._kodi_adapter.home_assistant_url,
                     entity_id=self._kodi_adapter.home_assistant_entity_sun,
-                    token=self._kodi_adapter.home_assistant_token
+                    token=self._kodi_adapter.home_assistant_token,
+                    check_ssl=self._kodi_adapter.get_check_ssl
                 )
             )
         except RequestError as e:

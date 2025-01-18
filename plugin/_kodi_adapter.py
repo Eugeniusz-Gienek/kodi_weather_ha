@@ -13,6 +13,7 @@ class _HomeAssistantWeatherPluginSettings(KodiPluginSetting):
     )
     HOME_ASSISTANT_SUN_ENTITY_ID = KodiPluginSetting(setting_id="ha_sun_entity_id", setting_type=str)
     LOG_ENABLED = KodiPluginSetting(setting_id="logEnabled", setting_type=bool)
+    CHECK_SSL =  KodiPluginSetting(setting_id="ha_check_ssl", setting_type=bool)
 
 
 class _HomeAssistantWeatherPluginStrings(IntEnum):
@@ -35,6 +36,9 @@ class _KodiHomeAssistantWeatherPluginAdapter(KodiWeatherPluginAdapter):
             and bool(self.home_assistant_entity_forecast)
             and bool(self.home_assistant_entity_sun)
         )
+    @property
+    def get_check_ssl(self) -> bool:
+        return self._get_setting(setting=_HomeAssistantWeatherPluginSettings.CHECK_SSL)
 
     @property
     def home_assistant_url(self) -> str:
