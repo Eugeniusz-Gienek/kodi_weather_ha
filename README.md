@@ -1,6 +1,8 @@
 # KODI weather forecast from HomeAssistant
 
-## Instructions
+## Wiki
+This repo has a [Wiki section](https://github.com/Eugeniusz-Gienek/kodi_weather_ha/wiki/Manual) describing the installation and configuring steps
+## ...or you may use these quick instructions
 In order to make it work there are a couple of actions which have to be performed on both HomeAssistant and Kodi.
 
 1. In Home Assistant you have to [create a token](https://community.home-assistant.io/t/how-to-get-long-lived-access-token/162159/5) for this plugin.
