@@ -7,6 +7,9 @@ from lib.unit.temperature import Temperature, TemperatureCelsius
 class ThermalComfort:
     @staticmethod
     def dew_point(temperature: Temperature, humidity_percent: float) -> TemperatureCelsius:
+        if temperature.value is None or humidity_percent is None:
+            return TemperatureCelsius(None)
+
         temperature_celsius = TemperatureCelsius.from_si_value(temperature.si_value())
         # obtain saturation vapor pressure (pressure at which water in air will condensate)
         vapor_pressure_sat = 6.11 * 10.0 ** (7.5 * temperature_celsius.value / (237.7 + temperature_celsius.value))
@@ -21,6 +24,9 @@ class ThermalComfort:
 
     @staticmethod
     def feels_like(temperature: Temperature, wind_speed: Speed) -> TemperatureCelsius:
+        if temperature.value is None or wind_speed.value is None:
+            return TemperatureCelsius(None)
+
         temperature_celsius = TemperatureCelsius.from_si_value(temperature.si_value())
         wind_speed_kph = SpeedKph.from_si_value(wind_speed.si_value())
         # Model: Wind Chill JAG/TI Environment Canada
