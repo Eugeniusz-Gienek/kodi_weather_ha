@@ -90,18 +90,41 @@ class HomeAssistantAdapter:
 
     @staticmethod
     def get_forecast(server_url: str, entity_id: str, token: str, check_ssl: bool) -> HomeAssistantForecast:
+        # Based on Home Assistant's WeatherEntityFeature IntFlag
+        FORECAST_DAILY = 1
+        FORECAST_HOURLY = 2
+
         current_url = urllib.parse.urljoin(base=server_url, url=f"/api/states/{entity_id}")
         forecast_url = urllib.parse.urljoin(base=server_url, url="/api/services/weather/get_forecasts")
+
         current = HomeAssistantAdapter.__request(url=current_url, token=token, check_ssl=check_ssl)
-        hourly = HomeAssistantAdapter.__request(
-            url=forecast_url, token=token, post=True, data={"entity_id": entity_id, "type": "hourly"}, check_ssl=check_ssl
-        )
-        daily = HomeAssistantAdapter.__request(
-            url=forecast_url, token=token, post=True, data={"entity_id": entity_id, "type": "daily"}, check_ssl=check_ssl
-        )
-        current_forecast_attributes = HomeAssistantAdapter.filter_attributes(current.json()["attributes"], 'current')
-        hourly_forecast_attributes = [HomeAssistantAdapter.filter_attributes(hourly_forecast, 'hourly') for hourly_forecast in hourly.json()["service_response"][entity_id]["forecast"]]
-        daily_forecast_attributes = [HomeAssistantAdapter.filter_attributes(daily_forecast, 'daily') for daily_forecast in daily.json()["service_response"][entity_id]["forecast"]]
+        current_json = current.json()
+        current_forecast_attributes = HomeAssistantAdapter.filter_attributes(current_json["attributes"], 'current')
+        current_forecast_attributes['condition'] = current_json['state']
+        supported_features = current_json.get("attributes", {}).get("supported_features", 0)
+        if supported_features is None:
+            supported_features = 0
+
+        hourly_forecast_attributes = []
+        if supported_features & FORECAST_HOURLY:
+            try:
+                hourly = HomeAssistantAdapter.__request(
+                    url=forecast_url, token=token, post=True, data={"entity_id": entity_id, "type": "hourly"}, check_ssl=check_ssl
+                )
+                hourly_forecast_attributes = [HomeAssistantAdapter.filter_attributes(hourly_forecast, 'hourly') for hourly_forecast in hourly.json()["service_response"][entity_id]["forecast"]]
+            except RequestError:
+                hourly_forecast_attributes = []
+
+        daily_forecast_attributes = []
+        if supported_features & FORECAST_DAILY:
+            try:
+                daily = HomeAssistantAdapter.__request(
+                    url=forecast_url, token=token, post=True, data={"entity_id": entity_id, "type": "daily"}, check_ssl=check_ssl
+                )
+                daily_forecast_attributes = [HomeAssistantAdapter.filter_attributes(daily_forecast, 'daily') for daily_forecast in daily.json()["service_response"][entity_id]["forecast"]]
+            except RequestError:
+                daily_forecast_attributes = []
+
         return HomeAssistantForecast(
             current=HomeAssistantCurrentForecast(**current_forecast_attributes),
             hourly=[

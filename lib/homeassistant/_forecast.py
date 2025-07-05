@@ -53,10 +53,14 @@ class _HomeAssistantFutureForecast:
 
 @dataclass
 class HomeAssistantCurrentForecast(_HomeAssistantForecastCommon, HomeAssistantForecastMeta):
+    condition: HomeAssistantWeatherCondition
     dew_point: float
     cloud_coverage: float
     pressure: float
     uv_index: float
+
+    def __post_init__(self):
+        self.condition = HomeAssistantWeatherCondition(self.condition)
 
 
 @dataclass

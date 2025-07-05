@@ -71,6 +71,13 @@ class ForecastConverter:
         wind_speed = SpeedUnits[ha_forecast.current.wind_speed_unit](ha_forecast.current.wind_speed)
         sunrise = ForecastConverter.__parse_homeassistant_datetime(ha_sun_info.next_rising)
         sunset = ForecastConverter.__parse_homeassistant_datetime(ha_sun_info.next_setting)
+
+        ha_condition = ha_forecast.current.condition
+        if ha_condition is None and len(ha_forecast.hourly) > 0:
+            ha_condition = ha_forecast.hourly[0].condition
+        if ha_condition is None and len(ha_forecast.daily) > 0:
+            ha_condition = ha_forecast.daily[0].condition
+
         return KodiForecastData(
             General=KodiGeneralForecastData(
                 location=ha_forecast.current.friendly_name,
@@ -85,7 +92,7 @@ class ForecastConverter:
                     precipitation_unit=ha_forecast.current.precipitation_unit
                 ),  # conversion not implemented in Kodi
                 condition=ForecastConverter.__translate_condition(
-                    ha_condition=ha_forecast.hourly[0].condition if len(ha_forecast.hourly) > 0 else None,
+                    ha_condition=ha_condition,
                     is_night=not (sunrise.time() < datetime.now().time() < sunset.time())
                 ),
                 humidity=ha_forecast.current.humidity,
