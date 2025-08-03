@@ -14,5 +14,6 @@
     </category>
     <category label="30008">
         <setting id="logEnabled"                    type="bool" label="30009" default="false" />
+        <setting id="errNotInform"                  type="bool" label="30202" default="false" />
     </category>
 </settings>

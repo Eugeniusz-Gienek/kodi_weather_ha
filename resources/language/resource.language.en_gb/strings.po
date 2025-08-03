@@ -88,3 +88,8 @@ msgstr ""
 msgctxt "#30201"
 msgid "Check SSL certificate"
 msgstr ""
+
+msgctxt "#30202"
+msgid "Do not inform about errors"
+msgstr ""
+

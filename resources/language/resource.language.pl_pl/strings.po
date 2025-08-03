@@ -83,8 +83,12 @@ msgstr "Używaj nazwy lokacji z HA"
 
 msgctxt "#30200"
 msgid "Home Assistant Weather"
-msgstr ""
+msgstr "Pogoda Home Assistant"
 
 msgctxt "#30201"
-msgid "Sprawdzać certyfikat SSL"
-msgstr ""
+msgid "Check SSL certificate"
+msgstr "Sprawdzać certyfikat SSL"
+
+msgctxt "#30202"
+msgid "Do not inform about errors"
+msgstr "Nie informować o błędach"
