@@ -12,7 +12,8 @@ class KodiHomeAssistantWeatherPlugin:
         self._kodi_adapter.log("Home Assistant Weather started.")
 
         if not self._kodi_adapter.required_settings_done():
-            self._kodi_adapter.dialog(message_id=_HomeAssistantWeatherPluginStrings.SETTINGS_REQUIRED)
+            if not self._kodi_adapter.get_err_not_inform:
+                self._kodi_adapter.dialog(message_id=_HomeAssistantWeatherPluginStrings.SETTINGS_REQUIRED)
             self._kodi_adapter.log("Settings for Home Assistant Weather not yet provided. Plugin will not work.")
         else:
             self.apply_forecast()
@@ -45,7 +46,8 @@ class KodiHomeAssistantWeatherPlugin:
                 message = _HomeAssistantWeatherPluginStrings.HOMEASSISTANT_UNREACHABLE
             else:
                 message = _HomeAssistantWeatherPluginStrings.HOMEASSISTANT_UNEXPECTED_RESPONSE
-            self._kodi_adapter.dialog(message_id=message)
+            if not self._kodi_adapter.get_err_not_inform:
+                self._kodi_adapter.dialog(message_id=message)
             return None, None
 
     def apply_forecast(self):

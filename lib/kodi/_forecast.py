@@ -85,7 +85,7 @@ class KodiWindDirectionCode(IntEnum):
     def from_bearing(bearing: float):
         if bearing is None:
             return KodiWindDirectionCode.VAR
-        if isinstance(bearing, str):
+        elif isinstance(bearing, str):
              bearing=bearing.upper()
              if bearing == 'N':
                  return KodiWindDirectionCode.N
