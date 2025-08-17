@@ -176,15 +176,15 @@ class _KodiConditionedForecastCommon:
 
     @property
     def condition_str(self) -> str:
-        return str(self.condition)
+        return str(self.condition) if self.condition is not None else ""
 
     @property
     def fanart_code(self) -> int:
-        return self.condition.value
+        return self.condition.value if self.condition is not None else 0
 
     @property
     def outlook_icon(self) -> str:
-        return f"{self.condition.value}.png"
+        return f"{self.condition.value}.png" if self.condition is not None else ""
 
 
 @dataclass

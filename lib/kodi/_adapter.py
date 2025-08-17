@@ -93,6 +93,8 @@ class KodiWeatherPluginAdapter:
 
     @staticmethod
     def format_unit(unit: Union[Temperature, Speed], value_format: str = "{:.0f}") -> str:
+        if unit is None or unit.value is None:
+            return ""
         return (value_format + " {}").format(unit.value, unit.unit)
 
     def set_weather_properties(self, forecast: KodiForecastData) -> None:
@@ -107,10 +109,10 @@ class KodiWeatherPluginAdapter:
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.TEMPERATURE,
-            value=KodiWeatherPluginAdapter.format_unit(
+            value=self.format_unit(
                 TemperatureCelsius.from_si_value(forecast.Current.temperature.si_value())
-            )   # converted by Kodi from °C
-        )
+            ) if forecast.Current.temperature.value is not None else ""
+        )   # converted by Kodi from °C
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.UV_INDEX,
             value=str(forecast.Current.uv_index)
@@ -125,39 +127,39 @@ class KodiWeatherPluginAdapter:
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.WIND,
-            value=KodiWeatherPluginAdapter.format_unit(
+            value=self.format_unit(
                 SpeedKph.from_si_value(forecast.Current.wind_speed.si_value())
-            )   # converted by Kodi from km/h
-        )
+            ) if forecast.Current.wind_speed.value is not None else ""
+        )   # converted by Kodi from km/h
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.WIND_DIRECTION,
             value=self._get_localized_string(string_id=forecast.Current.wind_direction.value)
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.HUMIDITY,
-            value=str(forecast.Current.humidity)    # % is added by Kodi
-        )
+            value=str(forecast.Current.humidity) if forecast.Current.humidity is not None else ""
+        )    # % is added by Kodi
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.DEW_POINT,
-            value=KodiWeatherPluginAdapter.format_unit(
+            value=self.format_unit(
                 TemperatureCelsius.from_si_value(forecast.Current.dew_point.si_value())
-            )     # converted by Kodi from °C
-        )
+            ) if forecast.Current.dew_point.value is not None else ""
+        )     # converted by Kodi from °C
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.FEELS_LIKE,
-            value=KodiWeatherPluginAdapter.format_unit(
+            value=self.format_unit(
                 TemperatureCelsius.from_si_value(forecast.Current.feels_like.si_value())
-            )   # converted by Kodi from °C
-        )
+            ) if forecast.Current.feels_like.value is not None else ""
+        )   # converted by Kodi from °C
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.WIND_CHILL,
-            value=KodiWeatherPluginAdapter.format_unit(
+            value=self.format_unit(
                 self.temperature_unit.from_si_value(forecast.Current.feels_like.si_value())
-            )
+            ) if forecast.Current.feels_like.value is not None else ""
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.PRECIPITATION,
-            value=forecast.Current.precipitation
+            value=forecast.Current.precipitation or ""
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.CLOUDINESS,
@@ -165,7 +167,7 @@ class KodiWeatherPluginAdapter:
         )
         self._set_window_property(
             key=_KodiWeatherProperties.CURRENT.PRESSURE,
-            value=forecast.Current.pressure
+            value=forecast.Current.pressure or ""
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.SUNRISE,
@@ -209,9 +211,9 @@ class KodiWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=hourly_properties.WIND_SPEED,
-                value=KodiWeatherPluginAdapter.format_unit(
+                value=self.format_unit(
                     self.wind_speed_unit.from_si_value(hourly_forecast.wind_speed.si_value())
-                )
+                ) if hourly_forecast.wind_speed.value is not None else ""
             )
             self._set_window_property(
                 key=hourly_properties.WIND_DIRECTION,
@@ -219,33 +221,33 @@ class KodiWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=hourly_properties.HUMIDITY,
-                value=percent(hourly_forecast.humidity)
+                value=percent(hourly_forecast.humidity) if hourly_forecast.humidity is not None else ""
             )
             self._set_window_property(
                 key=hourly_properties.TEMPERATURE,
-                value=KodiWeatherPluginAdapter.format_unit(
+                value=self.format_unit(
                     self.temperature_unit.from_si_value(hourly_forecast.temperature.si_value())
-                )
+                ) if hourly_forecast.temperature.value is not None else ""
             )
             self._set_window_property(
                 key=hourly_properties.DEW_POINT,
-                value=KodiWeatherPluginAdapter.format_unit(
+                value=self.format_unit(
                     self.temperature_unit.from_si_value(hourly_forecast.dew_point.si_value())
-                )
+                ) if hourly_forecast.dew_point.value is not None else ""
             )
             self._set_window_property(
                 key=hourly_properties.FEELS_LIKE,
-                value=KodiWeatherPluginAdapter.format_unit(
+                value=self.format_unit(
                     self.temperature_unit.from_si_value(hourly_forecast.feels_like.si_value())
-                )
+                ) if hourly_forecast.feels_like.value is not None else ""
             )
             self._set_window_property(
                 key=hourly_properties.PRESSURE,
-                value=hourly_forecast.pressure
+                value=hourly_forecast.pressure or ""
             )
             self._set_window_property(
                 key=hourly_properties.PRECIPITATION,
-                value=hourly_forecast.precipitation
+                value=hourly_forecast.precipitation or ""
             )
 
         # daily
@@ -268,15 +270,15 @@ class KodiWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=daily_properties.HIGH_TEMPERATURE,
-                value=KodiWeatherPluginAdapter.format_unit(
+                value=self.format_unit(
                     self.temperature_unit.from_si_value(daily_forecast.temperature.si_value())
-                )
+                ) if daily_forecast.temperature.value is not None else ""
             )
             self._set_window_property(
                 key=daily_properties.LOW_TEMPERATURE,
-                value=KodiWeatherPluginAdapter.format_unit(
+                value=self.format_unit(
                     self.temperature_unit.from_si_value(daily_forecast.low_temperature.si_value())
-                )
+                ) if daily_forecast.low_temperature.value is not None else ""
             )
             self._set_window_property(
                 key=daily_properties.OUTLOOK,
@@ -292,9 +294,9 @@ class KodiWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=daily_properties.WIND_SPEED,
-                value=KodiWeatherPluginAdapter.format_unit(
+                value=self.format_unit(
                     self.wind_speed_unit.from_si_value(daily_forecast.wind_speed.si_value())
-                )
+                ) if daily_forecast.wind_speed.value is not None else ""
             )
             self._set_window_property(
                 key=daily_properties.WIND_DIRECTION,
@@ -302,7 +304,7 @@ class KodiWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=daily_properties.PRECIPITATION,
-                value=daily_forecast.precipitation
+                value=daily_forecast.precipitation or ""
             )
             self._set_window_property(
                 key=daily_properties_compat.TITLE,
@@ -311,16 +313,16 @@ class KodiWeatherPluginAdapter:
             )
             self._set_window_property(
                 key=daily_properties_compat.HIGH_TEMP,
-                value=KodiWeatherPluginAdapter.format_unit(
+                value=self.format_unit(
                     TemperatureCelsius.from_si_value(daily_forecast.temperature.si_value())
-                )   # converted by skins from °C
-            )
+                ) if daily_forecast.temperature.value is not None else ""
+            )   # converted by skins from °C
             self._set_window_property(
                 key=daily_properties_compat.LOW_TEMP,
-                value=KodiWeatherPluginAdapter.format_unit(
+                value=self.format_unit(
                     TemperatureCelsius.from_si_value(daily_forecast.low_temperature.si_value())
-                )   # converted by skins from °C
-            )
+                ) if daily_forecast.low_temperature.value is not None else ""
+            )   # converted by skins from °C
             self._set_window_property(
                 key=daily_properties_compat.OUTLOOK,
                 value=daily_forecast.condition_str
