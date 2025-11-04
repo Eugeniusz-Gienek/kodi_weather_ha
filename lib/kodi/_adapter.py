@@ -266,6 +266,11 @@ class KodiWeatherPluginAdapter:
             self._set_window_property(
                 key=daily_properties.SHORT_DAY,
                 value=self._get_localized_string(
+                    string_id=daily_forecast.timestamp.isoweekday() + _KodiMagicValues.MESSAGE_OFFSET_DAY_SHORT)
+            )
+            self._set_window_property(
+                key=daily_properties.LONG_DAY,
+                value=self._get_localized_string(
                     string_id=daily_forecast.timestamp.isoweekday() + _KodiMagicValues.MESSAGE_OFFSET_DAY_LONG)
             )
             self._set_window_property(

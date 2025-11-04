@@ -77,6 +77,7 @@ class _KodiHourlyWeatherProperties(_NestedProperties):
 class _KodiDailyWeatherProperties(_NestedProperties):
     SHORT_DATE = "ShortDate"
     SHORT_DAY = "ShortDay"
+    LONG_DAY = "LongDay"
     HIGH_TEMPERATURE = "HighTemperature"
     LOW_TEMPERATURE = "LowTemperature"
     OUTLOOK = "Outlook"
