@@ -15,5 +15,6 @@
     <category label="30008">
         <setting id="logEnabled"                    type="bool" label="30009" default="false" />
         <setting id="errNotInform"                  type="bool" label="30202" default="false" />
+        <setting id="ha_request_attempts"           type="int"  label="30203" default="5" />
     </category>
 </settings>

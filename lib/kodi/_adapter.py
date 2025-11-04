@@ -54,15 +54,18 @@ class KodiWeatherPluginAdapter:
         return self._kodi_addon.getLocalizedString(id=string_id) or xbmc.getLocalizedString(id=string_id)
 
     def _get_setting(self, setting: KodiPluginSetting) -> _Setting_Type:
-        if setting.setting_type == bool:
-            return self._kodi_addon.getSettingBool(id=setting.setting_id)
-        elif setting.setting_type == int:
-            return self._kodi_addon.getSettingInt(id=setting.setting_id)
-        elif setting.setting_type == float:
-            return self._kodi_addon.getSettingNumber(id=setting.setting_id)
-        elif setting.setting_type == str:
-            return self._kodi_addon.getSettingString(id=setting.setting_id)
-        else:
+        try:
+            if setting.setting_type == bool:
+                return self._kodi_addon.getSettingBool(id=setting.setting_id)
+            elif setting.setting_type == int:
+                return self._kodi_addon.getSettingInt(id=setting.setting_id)
+            elif setting.setting_type == float:
+                return self._kodi_addon.getSettingNumber(id=setting.setting_id)
+            elif setting.setting_type == str:
+                return self._kodi_addon.getSettingString(id=setting.setting_id)
+            else:
+                return self._kodi_addon.getSetting(id=setting.setting_id)
+        except TypeError:
             return self._kodi_addon.getSetting(id=setting.setting_id)
 
     def log(self, message: str, level: KodiLogLevel = KodiLogLevel.DEBUG):

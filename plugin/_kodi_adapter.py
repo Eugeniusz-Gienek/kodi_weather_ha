@@ -14,6 +14,7 @@ class _HomeAssistantWeatherPluginSettings(KodiPluginSetting):
     HOME_ASSISTANT_SUN_ENTITY_ID = KodiPluginSetting(setting_id="ha_sun_entity_id", setting_type=str)
     LOG_ENABLED = KodiPluginSetting(setting_id="logEnabled", setting_type=bool)
     CHECK_SSL =  KodiPluginSetting(setting_id="ha_check_ssl", setting_type=bool)
+    REQUEST_ATTEMPTS =  KodiPluginSetting(setting_id="ha_request_attempts", setting_type=int)
     ERR_NOT_INFORM = KodiPluginSetting(setting_id="errNotInform", setting_type=bool)
 
 
@@ -49,6 +50,10 @@ class _KodiHomeAssistantWeatherPluginAdapter(KodiWeatherPluginAdapter):
     @property
     def home_assistant_url(self) -> str:
         return self._get_setting(setting=_HomeAssistantWeatherPluginSettings.HOME_ASSISTANT_SERVER)
+
+    @property
+    def request_attempts(self) -> int:
+        return self._get_setting(setting=_HomeAssistantWeatherPluginSettings.REQUEST_ATTEMPTS)
 
     @property
     def home_assistant_entity_forecast(self) -> str:

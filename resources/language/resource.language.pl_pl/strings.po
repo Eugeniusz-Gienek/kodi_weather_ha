@@ -92,3 +92,7 @@ msgstr "Sprawdzać certyfikat SSL"
 msgctxt "#30202"
 msgid "Do not inform about errors"
 msgstr "Nie informować o błędach"
+
+msgctxt "#30203"
+msgid "Request attempts"
+msgstr "Ilość prób pobierania"

@@ -93,3 +93,7 @@ msgctxt "#30202"
 msgid "Do not inform about errors"
 msgstr ""
 
+msgctxt "#30203"
+msgid "Request attempts"
+msgstr ""
+
