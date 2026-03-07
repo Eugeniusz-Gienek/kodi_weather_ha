@@ -1,7 +1,7 @@
 import urllib.parse
 from typing import Dict, Union
 
-import requests
+import requests, urllib3
 from requests import RequestException
 
 from ._errors import RequestError
@@ -10,6 +10,8 @@ from ._forecast import (
 )
 from ._sun import HomeAssistantSunInfo, HomeAssistantSunState
 
+# If the user selects not to check for SSL certificate, this doesn't mean we have to flood the log with the mentions of that being bad. User has a choice.
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class HomeAssistantAdapter:
     @staticmethod
