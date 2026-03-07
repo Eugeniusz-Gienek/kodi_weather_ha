@@ -76,10 +76,11 @@ class KodiWeatherPluginAdapter:
     def required_settings_done(self) -> bool:
         raise NotImplementedError()
 
-    def dialog(self, message_id: int) -> bool:
-        return xbmcgui.Dialog().ok(
+    def notification(self, message_id: int) -> None:
+        xbmcgui.Dialog().notification(
             heading=self._kodi_addon.getAddonInfo(id=_KodiMagicValues.ADDON_INFO_NAME_ID),
-            message=self._get_localized_string(string_id=message_id)
+            message=self._get_localized_string(string_id=message_id),
+            icon=xbmcgui.NOTIFICATION_ERROR
         )
     
     def _set_window_property(self, key: str, value: str) -> None:
