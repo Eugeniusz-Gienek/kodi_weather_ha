@@ -22,6 +22,9 @@ class HomeAssistantAdapter:
         err_code_received = -1
         err_msg = "Unknown error"
         default_request_attempts = 5
+        is_http = True
+        if len(url) > 4:
+             is_http = url[:5] != 'https'
         try:
             request_attempts = max(1,int(request_attempts))
         except TypeError:
@@ -31,14 +34,29 @@ class HomeAssistantAdapter:
         for i in range(request_attempts):
             try:
                 if post:
-                    r = requests.post(
-                        url=url, headers=HomeAssistantAdapter.__make_headers_from_token(token=token), json=data,
-                        params={"return_response": True}, verify=check_ssl
-                    )
+                    if not is_http:
+                        # HTTPS
+                        r = requests.post(
+                            url=url, headers=HomeAssistantAdapter.__make_headers_from_token(token=token), json=data,
+                            params={"return_response": True}, verify=check_ssl
+                        )
+                    else:
+                        # HTTP
+                        r = requests.post(
+                            url=url, headers=HomeAssistantAdapter.__make_headers_from_token(token=token), json=data,
+                            params={"return_response": True}
+                        )
                 else:
-                    r = requests.get(
-                        url=url, headers=HomeAssistantAdapter.__make_headers_from_token(token=token), params=data, verify=check_ssl
-                    )
+                    if not is_http:
+                        # HTTPS
+                        r = requests.get(
+                            url=url, headers=HomeAssistantAdapter.__make_headers_from_token(token=token), params=data, verify=check_ssl
+                        )
+                    else:
+                        # HTTP
+                         r = requests.get(
+                            url=url, headers=HomeAssistantAdapter.__make_headers_from_token(token=token), params=data
+                        )
                 if r.ok:
                     return r
             except RequestException:
