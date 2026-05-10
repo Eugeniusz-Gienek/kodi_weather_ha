@@ -96,3 +96,7 @@ msgstr "Nie informować o błędach"
 msgctxt "#30203"
 msgid "Request attempts"
 msgstr "Ilość prób pobierania"
+
+msgctxt "#30204"
+msgid "Remove seconds"
+msgstr "Nie pokazywać sekundy"

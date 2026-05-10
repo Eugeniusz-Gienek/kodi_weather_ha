@@ -101,7 +101,7 @@ class KodiWeatherPluginAdapter:
             return ""
         return (value_format + " {}").format(unit.value, unit.unit)
 
-    def set_weather_properties(self, forecast: KodiForecastData) -> None:
+    def set_weather_properties(self, forecast: KodiForecastData, remove_seconds: bool=False) -> None:
         percent = "{:.0f} %".format
         true = "true"
         self._set_window_property(key=_KodiWeatherProperties.GENERAL.LOCATION_1, value=forecast.General.location)
@@ -175,11 +175,11 @@ class KodiWeatherPluginAdapter:
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.SUNRISE,
-            value=forecast.Current.sunrise.strftime(self.time_format)
+            value=forecast.Current.sunrise.strftime(self.time_format.replace(":%S", "") if remove_seconds else self.time_format)
         )
         self._set_window_property(
             key=_KodiWeatherProperties.GENERAL.SUNSET,
-            value=forecast.Current.sunset.strftime(self.time_format)
+            value=forecast.Current.sunset.strftime(self.time_format.replace(":%S", "") if remove_seconds else self.time_format)
         )
 
         # hourly

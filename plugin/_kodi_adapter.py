@@ -16,6 +16,7 @@ class _HomeAssistantWeatherPluginSettings(KodiPluginSetting):
     CHECK_SSL =  KodiPluginSetting(setting_id="ha_check_ssl", setting_type=bool)
     REQUEST_ATTEMPTS =  KodiPluginSetting(setting_id="ha_request_attempts", setting_type=int)
     ERR_NOT_INFORM = KodiPluginSetting(setting_id="errNotInform", setting_type=bool)
+    REMOVE_SECONDS = KodiPluginSetting(setting_id="remove_seconds", setting_type=bool)
 
 
 class _HomeAssistantWeatherPluginStrings(IntEnum):
@@ -41,6 +42,10 @@ class _KodiHomeAssistantWeatherPluginAdapter(KodiWeatherPluginAdapter):
     @property
     def get_check_ssl(self) -> bool:
         return self._get_setting(setting=_HomeAssistantWeatherPluginSettings.CHECK_SSL)
+
+    @property
+    def remove_seconds(self) -> bool:
+        return self._get_setting(setting=_HomeAssistantWeatherPluginSettings.REMOVE_SECONDS)
 
     @property
     def get_err_not_inform(self) -> bool:

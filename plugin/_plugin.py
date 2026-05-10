@@ -68,5 +68,5 @@ class KodiHomeAssistantWeatherPlugin:
         )
         if self._kodi_adapter.override_location:
             kodi_forecast.General.location = self._kodi_adapter.override_location
-        self._kodi_adapter.set_weather_properties(forecast=kodi_forecast)
+        self._kodi_adapter.set_weather_properties(forecast=kodi_forecast, remove_seconds=self._kodi_adapter.remove_seconds)
         self._kodi_adapter.log(message="Weather updated successfully.", level=KodiLogLevel.INFO)

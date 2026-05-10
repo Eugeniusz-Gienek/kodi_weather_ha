@@ -97,3 +97,6 @@ msgctxt "#30203"
 msgid "Request attempts"
 msgstr ""
 
+msgctxt "#30204"
+msgid "Remove seconds"
+msgstr ""
