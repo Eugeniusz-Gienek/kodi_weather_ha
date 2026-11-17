@@ -99,7 +99,8 @@ class KodiWeatherPluginAdapter:
     def format_unit(unit: Union[Temperature, Speed], value_format: str = "{:.0f}") -> str:
         if unit is None or unit.value is None:
             return ""
-        return (value_format + " {}").format(unit.value, unit.unit)
+        separator = "" if isinstance(unit, Temperature) and unit.unit.startswith("°") else " "
+        return (value_format + separator + "{}").format(unit.value, unit.unit)
 
     def set_weather_properties(self, forecast: KodiForecastData, remove_seconds: bool=False) -> None:
         percent = "{:.0f} %".format
